@@ -1,5 +1,6 @@
 import { Route,Routes,BrowserRouter } from "react-router-dom";
 
+import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -11,11 +12,12 @@ import Checkout from './pages/Checkout'
 import MyBookings from './pages/MyBookings'
 import MyTickets from './pages/MyTickets'
 import OrganizerDashboard from './pages/OrganizerDashboard'
-import AdminDashboard from './pages/AdminDashboardDashboard'
+import AdminDashboard from './pages/AdminDashboard'
 
 function App(){
   return(
     <BrowserRouter>
+    <Navbar />
      <Routes>
 
       <Route path="/" element={<Home />} />
