@@ -1,0 +1,43 @@
+import { Route,Routes,BrowserRouter } from "react-router-dom";
+
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import Profile from './pages/Profile'
+import Events from './pages/Events'
+import EventDetails from './pages/EventDetails'
+import Checkout from './pages/Checkout'
+import MyBookings from './pages/MyBookings'
+import MyTickets from './pages/MyTickets'
+import OrganizerDashboard from './pages/OrganizerDashboard'
+import AdminDashboard from './pages/AdminDashboardDashboard'
+
+function App(){
+  return(
+    <BrowserRouter>
+     <Routes>
+
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login/>} />
+      <Route path="register" element={<Register/>} />
+      <Route path="/forgot-Password" element={<ForgotPassword/>} />
+      <Route path="/events" element={<Events/>} />
+      <Route path="/event/:id" element={<EventDetails/>} />
+
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/my-bookings" element={<MyBookings />} />
+      <Route path="/my-tickets" element={<MyTickets />} />
+       
+      <Route path="/organizer" element={<OrganizerDashboard/>}/>
+
+      <Route path="/admin" element={<AdminDashboard/>}/>
+
+
+     </Routes>
+    </BrowserRouter>
+  )
+}
+
+export default App
