@@ -1,24 +1,13 @@
-const { verifyAccessToken } = require('../modules/auth/auth.util');
+const express = require('express');
+const router = express.Router();
+const authController = require('./auth.controller');
+const validate = require('../../middleware/validate.middleware');
+const authenticateToken = require('../../middleware/auth.middleware');
+const { registerSchema, loginSchema, refreshTokenSchema } = require('./auth.validation');
 
-module.exports = function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+router.post('/register', validate(registerSchema), authController.register);
+router.post('/login', validate(loginSchema), authController.login);
+router.post('/refresh-token', validate(refreshTokenSchema), authController.refreshToken);
+router.get('/me', authenticateToken, authController.getMe);
 
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      error: { code: 'UNAUTHORIZED', message: 'Access token required' }
-    });
-  }
-
-  try {
-    const user = verifyAccessToken(token);
-    req.user = user;
-    next();
-  } catch (err) {
-    return res.status(403).json({
-      success: false,
-      error: { code: 'FORBIDDEN', message: 'Invalid or expired access token' }
-    });
-  }
-};
+module.exports = router;
