@@ -1,8 +1,7 @@
 const Joi = require('joi');
 
 const createRideSchema = Joi.object({
-  driverId: Joi.string().uuid().required(),
-
+  
   originAddress: Joi.string().min(5).max(500).required(),
   originLat: Joi.number().min(-90).max(90).required(),
   originLng: Joi.number().min(-180).max(180).required(),
@@ -15,8 +14,7 @@ const createRideSchema = Joi.object({
 
   departureAt: Joi.date().iso().greater('now').required(),
 
-  totalSeats: Joi.number().integer().min(1).max(7).required(),
-
+ 
   pricePerSeat: Joi.number().min(1).required(),
 
   notes: Joi.string().max(1000).allow('', null)

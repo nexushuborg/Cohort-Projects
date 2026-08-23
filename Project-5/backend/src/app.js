@@ -7,8 +7,6 @@ const env = require('./config/env');
 const errorHandler = require('./middleware/error.middleware');
 const authRoutes = require('./modules/auth/auth.routes');
 const rideRoutes = require('./modules/rides/rides.routes');
-const walletRoutes = require('./modules/wallet/wallet.routes');
-const paymentRoutes = require('./modules/payments/payment.routes');
 
 const app = express();
 
@@ -26,6 +24,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request logging
 app.use(morgan('dev'));
+
+app.use('/drivers', driverRoutes);
+app.use('/vehicles', vehicleRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
