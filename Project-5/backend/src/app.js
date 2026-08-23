@@ -7,6 +7,8 @@ const env = require('./config/env');
 const errorHandler = require('./middleware/error.middleware');
 const authRoutes = require('./modules/auth/auth.routes');
 const rideRoutes = require('./modules/rides/rides.routes');
+const walletRoutes = require('./modules/wallet/wallet.routes');
+const paymentRoutes = require('./modules/payments/payment.routes');
 
 const app = express();
 
@@ -36,6 +38,8 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/auth', authRoutes);
 app.use('/rides', rideRoutes);
+app.use('/wallet', walletRoutes);
+app.use('/payments', paymentRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
