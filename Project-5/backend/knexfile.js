@@ -3,7 +3,7 @@ const env = require('./src/config/env');
 module.exports = {
   development: {
     client: 'pg',
-    connection: env.databaseUrl || 'postgres://postgres:postgres@localhost:5432/ride_sharing',
+    connection: env.databaseUrl,
     migrations: {
       directory: './src/migrations'
     },
