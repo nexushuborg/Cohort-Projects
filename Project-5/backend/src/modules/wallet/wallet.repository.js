@@ -1,24 +1,51 @@
 const db = require('../../config/database');
 
-// Find wallet by user ID or create one if it doesn't exist
+// Helper to find driver_id from user_id
+const getDriverByUserId = async (userId) => {
+  return db('driver_profiles').where({ user_id: userId }).first();
+};
+
+// Find wallet by user ID (via driver profile) or create one if driver profile exists
 const getOrCreateWallet = async (userId) => {
-  let wallet = await db('wallet').where({ user_id: userId }).first();
+  let driver = await getDriverByUserId(userId);
+
+  // Fallback: If user is not yet registered as driver, retrieve or create driver profile shell
+  if (!driver) {
+    const [newDriver] = await db('driver_profiles')
+      .insert({ user_id: userId, status: 'PENDING' })
+      .returning('*');
+    driver = newDriver;
+  }
+
+  let wallet = await db('wallet').where({ driver_id: driver.id }).first();
+
   if (!wallet) {
     const [newWallet] = await db('wallet')
-      .insert({ user_id: userId, balance: 0.00, currency: 'INR' })
+      .insert({ driver_id: driver.id, balance: 0.00 })
       .returning('*');
     wallet = newWallet;
   }
+
   return wallet;
 };
 
 // Add funds to wallet with database transaction
 const topUpBalance = async (userId, amount, referenceId) => {
   return db.transaction(async (trx) => {
-    let wallet = await trx('wallet').where({ user_id: userId }).first();
+    let driver = await trx('driver_profiles').where({ user_id: userId }).first();
+
+    if (!driver) {
+      const [newDriver] = await trx('driver_profiles')
+        .insert({ user_id: userId, status: 'PENDING' })
+        .returning('*');
+      driver = newDriver;
+    }
+
+    let wallet = await trx('wallet').where({ driver_id: driver.id }).first();
+
     if (!wallet) {
       const [newWallet] = await trx('wallet')
-        .insert({ user_id: userId, balance: 0.00, currency: 'INR' })
+        .insert({ driver_id: driver.id, balance: 0.00 })
         .returning('*');
       wallet = newWallet;
     }
@@ -35,8 +62,7 @@ const topUpBalance = async (userId, amount, referenceId) => {
         wallet_id: wallet.id,
         amount,
         type: 'CREDIT',
-        description: `Top-up via Payment Ref: ${referenceId || 'DIRECT'}`,
-        status: 'SUCCESS'
+        description: `Top-up via Ref: ${referenceId || 'DIRECT'}`
       })
       .returning('*');
 
