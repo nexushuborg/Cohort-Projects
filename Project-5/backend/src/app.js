@@ -7,6 +7,10 @@ const env = require('./config/env');
 const errorHandler = require('./middleware/error.middleware');
 const authRoutes = require('./modules/auth/auth.routes');
 const rideRoutes = require('./modules/rides/rides.routes');
+const walletRoutes = require('./modules/wallet/wallet.routes');
+const paymentRoutes = require('./modules/payments/payment.routes');
+const driverRoutes = require('./modules/drivers/driver.routes');
+const vehicleRoutes = require('./modules/vehicles/vehicles.routes');
 
 const app = express();
 
