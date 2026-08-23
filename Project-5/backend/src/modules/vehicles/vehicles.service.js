@@ -1,4 +1,4 @@
-const repository = require('./vehicles.repository');
+const repository = require('./vehicles.repositiry');
 
 const getDriverOrThrow = async (userId) => {
   const driver =
