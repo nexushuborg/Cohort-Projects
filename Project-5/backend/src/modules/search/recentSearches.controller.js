@@ -2,7 +2,7 @@ const searchRepo = require('./search.repository');
 
 const getRecentSearches = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id || req.user.userId || req.user.sub;
     const searches = await searchRepo.getRecentSearchesByUserId(userId);
 
     return res.status(200).json({
@@ -16,7 +16,7 @@ const getRecentSearches = async (req, res, next) => {
 
 const saveRecentSearch = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id || req.user.userId || req.user.sub;
     const search = await searchRepo.saveRecentSearch(userId, req.body);
 
     return res.status(201).json({
@@ -31,7 +31,7 @@ const saveRecentSearch = async (req, res, next) => {
 const deleteRecentSearch = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = req.user.id || req.user.userId || req.user.sub;
 
     await searchRepo.deleteRecentSearch(id, userId);
 

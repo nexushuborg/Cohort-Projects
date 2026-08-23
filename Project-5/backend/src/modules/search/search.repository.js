@@ -4,7 +4,33 @@ const db = require('../../config/database');
  * Searches rides with dynamic filters and sorting options.
  */
 const searchRides = async ({ origin, destination, date, seats = 1, sortBy = 'departure_at', order = 'asc', page = 1, limit = 20 }) => {
-  const query = db('rides as r')
+  // Base filtering query used for both counting and fetching
+  const baseQuery = db('rides as r')
+    .where('r.status', 'active')
+    .andWhere('r.available_seats', '>=', seats);
+
+  if (origin) {
+    baseQuery.whereILike('r.origin_city', `%${origin}%`);
+  }
+
+  if (destination) {
+    baseQuery.whereILike('r.destination_city', `%${destination}%`);
+  }
+
+  if (date) {
+    baseQuery.whereRaw('DATE(r.departure_at) = DATE(?)', [date]);
+  }
+
+  // 1. Get total count cleanly without joins
+  const [{ count }] = await baseQuery.clone().count('r.id as count');
+
+  // 2. Build full data retrieval query with joins
+  const allowedSortFields = ['price_per_seat', 'departure_at'];
+  const sortColumn = allowedSortFields.includes(sortBy) ? `r.${sortBy}` : 'r.departure_at';
+  const sortOrder = order.toLowerCase() === 'desc' ? 'desc' : 'asc';
+  const offset = (page - 1) * limit;
+
+  const items = await baseQuery
     .join('driver_profiles as dp', 'r.driver_id', 'dp.id')
     .join('users as u', 'dp.user_id', 'u.id')
     .join('vehicles as v', 'r.vehicle_id', 'v.id')
@@ -18,29 +44,9 @@ const searchRides = async ({ origin, destination, date, seats = 1, sortBy = 'dep
       'v.model as vehicle_model',
       'v.color as vehicle_color'
     )
-    .where('r.status', 'active')
-    .andWhere('r.available_seats', '>=', seats);
-
-  if (origin) {
-    query.whereILike('r.origin_city', `%${origin}%`);
-  }
-
-  if (destination) {
-    query.whereILike('r.destination_city', `%${destination}%`);
-  }
-
-  if (date) {
-    query.whereRaw('DATE(r.departure_at) = DATE(?)', [date]);
-  }
-
-  const allowedSortFields = ['price_per_seat', 'departure_at'];
-  const sortColumn = allowedSortFields.includes(sortBy) ? `r.${sortBy}` : 'r.departure_at';
-  const sortOrder = order.toLowerCase() === 'desc' ? 'desc' : 'asc';
-
-  const offset = (page - 1) * limit;
-
-  const [{ count }] = await query.clone().count('r.id as count');
-  const items = await query.orderBy(sortColumn, sortOrder).offset(offset).limit(limit);
+    .orderBy(sortColumn, sortOrder)
+    .offset(offset)
+    .limit(limit);
 
   return {
     items,

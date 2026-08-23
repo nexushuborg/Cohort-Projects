@@ -2,7 +2,8 @@ const dashboardRepo = require('./dashboards.repository');
 
 const getDriverDashboard = async (req, res, next) => {
   try {
-    const stats = await dashboardRepo.getDriverStats(req.user.id);
+    const userId = req.user.id || req.user.userId || req.user.sub;
+    const stats = await dashboardRepo.getDriverStats(userId);
     if (!stats) {
       return res.status(404).json({
         success: false,
@@ -18,7 +19,8 @@ const getDriverDashboard = async (req, res, next) => {
 
 const getRiderDashboard = async (req, res, next) => {
   try {
-    const stats = await dashboardRepo.getRiderStats(req.user.id);
+    const userId = req.user.id || req.user.userId || req.user.sub;
+    const stats = await dashboardRepo.getRiderStats(userId);
     return res.status(200).json({ success: true, data: stats });
   } catch (error) {
     next(error);
