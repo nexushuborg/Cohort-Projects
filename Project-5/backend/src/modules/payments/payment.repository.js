@@ -2,10 +2,10 @@ const db = require('../../config/database');
 
 const createPayment = async (paymentData) => {
   const payload = {
-    user_id: paymentData.user_id,
-    ride_id: paymentData.ride_id || null,
+    rider_id: paymentData.user_id,
+    booking_id: paymentData.ride_id,
     amount: paymentData.amount,
-    method: paymentData.payment_method, // Maps payment_method to table column 'method'
+    method: paymentData.payment_method,
     status: paymentData.status
   };
 
@@ -20,8 +20,7 @@ const updatePaymentStatus = async (paymentId, status, transactionRef) => {
     .where({ id: paymentId })
     .update({ 
       status, 
-      transaction_reference: transactionRef,
-      updated_at: db.fn.now() 
+      transaction_id: transactionRef
     })
     .returning('*');
   return payment;
@@ -29,7 +28,7 @@ const updatePaymentStatus = async (paymentId, status, transactionRef) => {
 
 const getPaymentsByUserId = async (userId) => {
   return db('payments')
-    .where({ user_id: userId })
+    .where({ rider_id: userId })
     .orderBy('created_at', 'desc');
 };
 
