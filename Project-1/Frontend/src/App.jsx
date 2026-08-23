@@ -1,5 +1,6 @@
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 
+import CreateEvent from "./pages/CreateEvent";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -20,6 +21,8 @@ function App() {
       <Navbar />
 
       <Routes>
+        
+        <Route path="/create-event" element={<CreateEvent />} />
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
