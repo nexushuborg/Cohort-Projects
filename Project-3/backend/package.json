@@ -1,0 +1,28 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "joi": "^18.2.5",
+    "jsonwebtoken": "^9.0.3",
+    "knex": "^3.3.0",
+    "morgan": "^1.11.0",
+    "nodemon": "^3.1.14",
+    "pg": "^8.23.0",
+    "uuid": "^14.0.2"
+  }
+}
