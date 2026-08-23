@@ -1,63 +1,130 @@
 const repository = require('./rides.repository');
 
 const createRide = async (data) => {
-  // Find an active vehicle belonging to this driver
-  const vehicle = await repository.findActiveVehicleByDriver(data.driverId);
+
+ 
+
+  const driver =
+    await repository.findDriverByUserId(
+      data.userId
+    );
+
+  if (!driver) {
+    const error = new Error(
+      'You must register as a driver before creating a ride'
+    );
+
+    error.statusCode = 403;
+    error.code = 'DRIVER_NOT_FOUND';
+
+    throw error;
+  }
+
+
+  const vehicle =
+    await repository.findActiveVehicleByDriver(
+      driver.id
+    );
 
   if (!vehicle) {
-    const error = new Error('No active vehicle found for this driver');
+    const error = new Error(
+      'No active vehicle found for this driver'
+    );
+
     error.statusCode = 400;
+    error.code = 'VEHICLE_NOT_FOUND';
+
     throw error;
   }
 
-  // A ride cannot have more seats than the vehicle
-  if (data.totalSeats > vehicle.seat_count) {
-    const error = new Error(
-      `Total seats cannot exceed vehicle seat count of ${vehicle.seat_count}`
-    );
-    error.statusCode = 400;
-    throw error;
-  }
+
+
+  const totalSeats =
+    vehicle.seat_count;
 
   const rideData = {
-    driver_id: data.driverId,
+    driver_id: driver.id,
     vehicle_id: vehicle.id,
+    origin_address:
+      data.originAddress,
+    origin_lat:
+      data.originLat,
+    origin_lng:
+      data.originLng,
+    origin_city:
+      data.originCity,
 
-    origin_address: data.originAddress,
-    origin_lat: data.originLat,
-    origin_lng: data.originLng,
-    origin_city: data.originCity,
 
-    destination_address: data.destinationAddress,
-    destination_lat: data.destinationLat,
-    destination_lng: data.destinationLng,
-    destination_city: data.destinationCity,
+    // Destination
+    destination_address:
+      data.destinationAddress,
 
-    departure_at: data.departureAt,
+    destination_lat:
+      data.destinationLat,
 
-    total_seats: data.totalSeats,
-    available_seats: data.totalSeats,
+    destination_lng:
+      data.destinationLng,
 
-    price_per_seat: data.pricePerSeat,
+    destination_city:
+      data.destinationCity,
 
-    notes: data.notes || null,
+
+    // Departure
+    departure_at:
+      data.departureAt,
+
+
+    // Seats come from the vehicle
+    total_seats:
+      totalSeats,
+
+    available_seats:
+      totalSeats,
+
+
+    // Price
+    price_per_seat:
+      data.pricePerSeat,
+
+
+    // Optional notes
+    notes:
+      data.notes || null,
+
+
+    // New rides are active
     status: 'active'
   };
 
-  return repository.createRide(rideData);
+
+  return repository.createRide(
+    rideData
+  );
 };
 
+
 const getRideById = async (rideId) => {
-  const ride = await repository.findRideById(rideId);
+
+  const ride =
+    await repository.findRideById(
+      rideId
+    );
 
   if (!ride) {
-    const error = new Error('Ride not found');
+
+    const error = new Error(
+      'Ride not found'
+    );
+
     error.statusCode = 404;
+    error.code = 'NOT_FOUND';
+
     throw error;
   }
 
   return ride;
 };
+
 
 module.exports = {
   createRide,

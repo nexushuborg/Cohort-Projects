@@ -3,7 +3,8 @@ const { createRideSchema } = require('./rides.validation');
 
 const createRide = async (req, res) => {
   try {
-    const { error, value } = createRideSchema.validate(req.body);
+    const { error, value } =
+      createRideSchema.validate(req.body);
 
     if (error) {
       return res.status(400).json({
@@ -19,7 +20,10 @@ const createRide = async (req, res) => {
       });
     }
 
-    const ride = await service.createRide(value);
+    const ride = await service.createRide({
+      userId: req.user.sub,
+      ...value
+    });
 
     return res.status(201).json({
       success: true,
@@ -36,9 +40,13 @@ const createRide = async (req, res) => {
       success: false,
       error: {
         code:
-          error.statusCode === 400
+          error.code ||
+          (error.statusCode === 400
             ? 'VALIDATION_ERROR'
-            : 'INTERNAL_ERROR',
+            : error.statusCode === 403
+              ? 'FORBIDDEN'
+              : 'INTERNAL_ERROR'),
+
         message: error.message
       }
     });
@@ -47,7 +55,8 @@ const createRide = async (req, res) => {
 
 const getRideById = async (req, res) => {
   try {
-    const ride = await service.getRideById(req.params.id);
+    const ride =
+      await service.getRideById(req.params.id);
 
     return res.status(200).json({
       success: true,
@@ -61,6 +70,7 @@ const getRideById = async (req, res) => {
           error.statusCode === 404
             ? 'NOT_FOUND'
             : 'INTERNAL_ERROR',
+
         message: error.message
       }
     });
