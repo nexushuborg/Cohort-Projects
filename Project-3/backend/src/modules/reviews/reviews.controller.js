@@ -94,7 +94,132 @@ const getPropertyReviews = async (req, res) => {
     }
 };
 
+const createGuestReview = async (req, res) => {
+    const { bookingId } = req.params;
+    const { rating, text } = req.body;
+    const host_id = req.user.id;
+
+    try {
+        const getBookingQuery = `
+            SELECT b.*, p.host_id FROM bookings b
+            JOIN properties p ON b.property_id = p.id
+            WHERE b.id = $1 AND p.host_id = $2;
+        `;
+        const bookingResult = await db.query(getBookingQuery, [bookingId, host_id]);
+
+        if (bookingResult.rows.length === 0) {
+            return res.status(403).json({
+                status: "failed",
+                message: "Unauthorized or booking not found"
+            });
+        }
+
+        const booking = bookingResult.rows[0];
+
+        const createReviewQuery = `
+            INSERT INTO guest_reviews (booking_id, host_id, guest_id, rating, text)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *;
+        `;
+
+        const result = await db.query(createReviewQuery, [
+            bookingId,
+            host_id,
+            booking.guest_id,
+            rating,
+            text
+        ]);
+
+        return res.status(201).json({
+            status: "success",
+            message: "Guest review submitted successfully",
+            data: result.rows[0]
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to submit guest review",
+            error: error
+        });
+    }
+};
+
+const updateReview = async (req, res) => {
+    const { id } = req.params;
+    const { rating, text } = req.body;
+    const user_id = req.user.id;
+
+    const updateQuery = `
+        UPDATE property_reviews
+        SET rating = COALESCE($1, rating),
+            text = COALESCE($2, text)
+        WHERE id = $3 AND guest_id = $4
+        RETURNING *;
+    `;
+
+    try {
+        const result = await db.query(updateQuery, [rating, text, id, user_id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                status: "failed",
+                message: "Review not found or unauthorized"
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Review updated successfully",
+            data: result.rows[0]
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to update review",
+            error: error
+        });
+    }
+};
+
+const deleteReview = async (req, res) => {
+    const { id } = req.params;
+    const user_id = req.user.id;
+
+    const deleteQuery = `
+        DELETE FROM property_reviews
+        WHERE id = $1 AND (guest_id = $2 OR $3 = 'admin')
+        RETURNING *;
+    `;
+
+    try {
+        const result = await db.query(deleteQuery, [id, user_id, req.user.role]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                status: "failed",
+                message: "Review not found or unauthorized"
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Review deleted successfully",
+            data: result.rows[0]
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to delete review",
+            error: error
+        });
+    }
+};
+
 module.exports = {
     createPropertyReview,
-    getPropertyReviews
+    getPropertyReviews,
+    createGuestReview,
+    updateReview,
+    deleteReview
 };

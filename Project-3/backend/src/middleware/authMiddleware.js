@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = process.env;
+const { rbacMiddleware } = require('./rbac.middleware.js');
 
 const authMiddleware = (req, res, next) => {
-    const cookie = req.cookies.token;
+    const cookie = req.cookies?.token;
     const token = cookie || req.headers.authorization?.split(' ')[1];
 
     if (!token) {
@@ -13,7 +13,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
         req.user = decoded;
         next();
     } catch (error) {
@@ -24,6 +24,4 @@ const authMiddleware = (req, res, next) => {
     }
 };
 
-
-
-module.exports = { authMiddleware};
+module.exports = { authMiddleware, rbacMiddleware };
