@@ -58,6 +58,49 @@ const createTables = async () => {
       sale_end TIMESTAMP,
       created_at TIMESTAMP DEFAULT NOW()
     );
+
+    -- 5. Bookings
+    CREATE TABLE IF NOT EXISTS bookings (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID REFERENCES users(id) NOT NULL,
+      event_id UUID REFERENCES events(id) NOT NULL,
+      total_amount DECIMAL(10,2) NOT NULL,
+      status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'cancelled')),
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    );
+
+    -- 6. Booking Items (one row per ticket-tier line in a booking)
+    CREATE TABLE IF NOT EXISTS booking_items (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
+      ticket_tier_id UUID REFERENCES ticket_tiers(id) NOT NULL,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      price_at_purchase DECIMAL(10,2) NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
+    -- 7. Payments
+    CREATE TABLE IF NOT EXISTS payments (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      booking_id UUID REFERENCES bookings(id) NOT NULL,
+      amount DECIMAL(10,2) NOT NULL,
+      method VARCHAR(50) NOT NULL,
+      status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
+      transaction_id VARCHAR(255),
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
+    -- 8. Tickets
+    CREATE TABLE IF NOT EXISTS tickets (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      booking_item_id UUID REFERENCES booking_items(id) NOT NULL,
+      qr_code VARCHAR(255) UNIQUE NOT NULL,
+      status VARCHAR(20) DEFAULT 'valid' CHECK (status IN ('valid', 'used', 'cancelled')),
+      checked_in_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
   `;
 
   try {
