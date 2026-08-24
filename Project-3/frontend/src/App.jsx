@@ -6,7 +6,11 @@ import Register from "./pages/Register";
 import Search from "./pages/Search";
 import AdminDashboard from "./pages/AdminDashboard";
 import PropertyDetails from "./pages/PropertyDetails";
+<<<<<<< Updated upstream
 import Booking from "./pages/Booking";
+=======
+import MyTrips from "./pages/MyTrips";
+>>>>>>> Stashed changes
 
 const router = createBrowserRouter([
   {
@@ -38,6 +42,10 @@ const router = createBrowserRouter([
       {
         path: "properties/:id",
         element: <PropertyDetails />,
+      },
+      {
+         path:"/trips",
+         element:<MyTrips />,
       },
     ],
   },
