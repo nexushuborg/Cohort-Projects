@@ -10,7 +10,10 @@ async function runMigrations() {
     console.log('✅ All 16 tables and indexes created successfully via SQL query.');
   } catch (error) {
     console.error('❌ Migration failed:', error.message);
-    process.exit(1);
+    // Don't kill the process in test mode
+    if (require.main === module) {
+      process.exit(1);
+    }
   } finally {
     if (require.main === module) {
       await pool.end();

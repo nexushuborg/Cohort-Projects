@@ -7,22 +7,39 @@ const rateLimit = require('express-rate-limit');
 const env = require('./config/env');
 const { errorHandler, notFoundHandler } = require('./middleware/error.middleware');
 
-// Import Modules
+// ─── Routes - Person 1 Modules ───────────────────────────────
 const authRoutes = require('./modules/auth/auth.routes');
 const userRoutes = require('./modules/users/user.routes');
 const sellerRoutes = require('./modules/sellers/seller.routes');
 const categoryRoutes = require('./modules/categories/category.routes');
 
+// ─── Routes - Person 2 Modules ───────────────────────────────
+const productRoutes = require('./modules/products/product.routes');
+const productImageRoutes = require('./modules/product-images/product-image.routes');
+const variantRoutes = require('./modules/variants/variant.routes');
+const skuRoutes = require('./modules/skus/sku.routes');
+
 const app = express();
 
-// Security Middlewares
+// ─── Security ────────────────────────────────────────────────
 app.use(helmet());
+
+// ─── CORS ────────────────────────────────────────────────────
 app.use(cors());
 
-// Rate Limiting
+// ─── Body Parsing ────────────────────────────────────────────
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ─── Request Logging ─────────────────────────────────────────
+if (env.nodeEnv !== 'test' && env.NODE_ENV !== 'test') {
+  app.use(morgan('dev'));
+}
+
+// ─── Rate Limiting ───────────────────────────────────────────
 const limiter = rateLimit({
-  windowMs: env.RATE_LIMIT_WINDOW_MS,
-  max: env.RATE_LIMIT_MAX,
+  windowMs: env.rateLimitWindowMs || env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000,
+  max: env.rateLimitMax || env.RATE_LIMIT_MAX || 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -33,21 +50,16 @@ const limiter = rateLimit({
     },
   },
 });
-app.use(limiter);
+app.use('/api/', limiter);
 
-// Logging
-if (env.NODE_ENV !== 'test') {
-  app.use(morgan('dev'));
-}
+// ─── Static Files (uploads) ──────────────────────────────────
+app.use('/uploads', express.static('uploads'));
 
-// Body parsers
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Health Check
+// ─── Health Check ────────────────────────────────────────────
 app.get('/health', (req, res) => {
-  return res.status(200).json({
+  res.status(200).json({
     success: true,
+    message: 'Multi-Vendor Marketplace API is running',
     data: {
       status: 'healthy',
       timestamp: new Date().toISOString(),
@@ -56,22 +68,30 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Mount Feature Modules (Person 1 Ownership)
+// ─── Feature Routes (Person 1 Ownership) ─────────────────────
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/sellers', sellerRoutes);
 app.use('/categories', categoryRoutes);
 
-// Placeholder routes for Person 2 modules to prevent breaking callers if hit
-app.use('/products', (req, res, next) => {
-  if (req.method === 'GET' && req.path === '/') {
-    return res.status(200).json({ success: true, data: { items: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } } });
-  }
-  next();
-});
+// ─── Feature Routes (Person 2 Ownership) ─────────────────────
+app.use('/products', productRoutes);
+app.use('/products/:productId/images', productImageRoutes);
+app.use('/products/:productId/variants', variantRoutes);
+app.use('/products/:productId/skus', skuRoutes);
 
-// 404 & Global Error Handling Middleware
+// ─── 404 Handler & Global Error Handler ──────────────────────
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+// ─── Start Server ────────────────────────────────────────────
+if (require.main === module) {
+  const port = env.port || env.PORT || 5000;
+  app.listen(port, () => {
+    console.log(
+      `Server running in ${env.nodeEnv || env.NODE_ENV} mode on port ${port}`
+    );
+  });
+}
 
 module.exports = app;
