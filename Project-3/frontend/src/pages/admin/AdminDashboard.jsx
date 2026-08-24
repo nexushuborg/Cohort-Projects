@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/axios";
 
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
@@ -14,98 +14,103 @@ function AdminDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const [usersResponse, propertiesResponse, bookingsResponse] =
+          await Promise.all([
+            api.get("/users"),
+            api.get("/properties"),
+            api.get("/bookings"),
+          ]);
+
+        const usersData =
+          usersResponse.data?.data || [];
+
+        const propertiesData =
+          propertiesResponse.data?.data || [];
+
+        const bookingsData =
+          bookingsResponse.data?.data || [];
+
+        setUsers(usersData);
+
+        setStats({
+          users: usersData.length,
+          properties: propertiesData.length,
+          bookings: bookingsData.length,
+        });
+      } catch (err) {
+        console.error(
+          "Failed to load admin dashboard:",
+          err
+        );
+
+        setError(
+          err.response?.data?.message ||
+            err.response?.data?.error?.message ||
+            "Unable to load dashboard data."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchDashboardData();
   }, []);
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-
-      const usersResponse = await axios.get(
-        "http://localhost:5000/api/users"
-      );
-
-      const usersData = usersResponse.data.data || [];
-
-      setUsers(usersData);
-
-      const propertiesResponse = await axios.get(
-        "http://localhost:5000/api/properties"
-      );
-
-      const bookingsResponse = await axios.get(
-        "http://localhost:5000/api/bookings"
-      );
-
-      setStats({
-        users: usersData.length,
-        properties:
-          propertiesResponse.data.data?.length || 0,
-        bookings:
-          bookingsResponse.data.data?.length || 0,
-      });
-
-    } catch (err) {
-      console.error(err);
-      setError("Unable to load dashboard data.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-
+      <main className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-rose-500" />
 
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-rose-500"></div>
-
-          <p className="mt-4 text-gray-500">
+          <p className="mt-4 text-sm text-gray-500">
             Loading dashboard...
           </p>
-
         </div>
-
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50">
 
       {/* Header */}
-      <div className="border-b bg-white">
-
+      <div className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-6 py-8">
 
-          <h1 className="text-3xl font-bold text-gray-900">
+          <p className="text-sm font-semibold text-rose-500">
+            Administration
+          </p>
+
+          <h1 className="mt-1 text-3xl font-bold text-gray-900">
             Admin Dashboard
           </h1>
 
           <p className="mt-2 text-gray-500">
-            Manage users and monitor your platform.
+            Manage users and monitor the RentalHub platform.
           </p>
 
         </div>
-
       </div>
 
-      <main className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-10">
 
         {/* Error */}
         {error && (
-          <div className="mb-6 rounded-lg bg-red-50 p-4 text-red-600">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
             {error}
           </div>
         )}
 
         {/* Statistics */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
           {/* Users */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
 
               <div>
@@ -123,12 +128,10 @@ function AdminDashboard() {
               </div>
 
             </div>
-
           </div>
 
           {/* Properties */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
 
               <div>
@@ -146,12 +149,10 @@ function AdminDashboard() {
               </div>
 
             </div>
-
           </div>
 
           {/* Bookings */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
 
               <div>
@@ -169,15 +170,14 @@ function AdminDashboard() {
               </div>
 
             </div>
-
           </div>
 
-        </div>
+        </section>
 
-        {/* Users Table */}
-        <div className="mt-10 overflow-hidden rounded-2xl bg-white shadow-sm">
+        {/* Users */}
+        <section className="mt-10 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
 
-          <div className="border-b px-6 py-5">
+          <div className="border-b border-gray-100 px-6 py-5">
 
             <h2 className="text-xl font-bold text-gray-900">
               Registered Users
@@ -204,7 +204,6 @@ function AdminDashboard() {
                 <thead className="bg-gray-50">
 
                   <tr>
-
                     <th className="px-6 py-4 text-sm font-semibold text-gray-600">
                       Name
                     </th>
@@ -224,7 +223,6 @@ function AdminDashboard() {
                     <th className="px-6 py-4 text-sm font-semibold text-gray-600">
                       Joined
                     </th>
-
                   </tr>
 
                 </thead>
@@ -243,11 +241,13 @@ function AdminDashboard() {
                         <div className="flex items-center gap-3">
 
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 font-semibold text-rose-600">
-                            {user.name?.charAt(0).toUpperCase()}
+                            {user.name
+                              ?.charAt(0)
+                              .toUpperCase() || "U"}
                           </div>
 
                           <span className="font-medium text-gray-900">
-                            {user.name}
+                            {user.name || "Unknown"}
                           </span>
 
                         </div>
@@ -255,13 +255,13 @@ function AdminDashboard() {
                       </td>
 
                       <td className="px-6 py-4 text-gray-600">
-                        {user.email}
+                        {user.email || "N/A"}
                       </td>
 
                       <td className="px-6 py-4">
 
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
                             user.role === "admin"
                               ? "bg-purple-100 text-purple-700"
                               : user.role === "host"
@@ -269,7 +269,7 @@ function AdminDashboard() {
                               : "bg-green-100 text-green-700"
                           }`}
                         >
-                          {user.role}
+                          {user.role || "guest"}
                         </span>
 
                       </td>
@@ -279,13 +279,11 @@ function AdminDashboard() {
                       </td>
 
                       <td className="px-6 py-4 text-gray-600">
-
                         {user.created_at
                           ? new Date(
                               user.created_at
                             ).toLocaleDateString()
                           : "N/A"}
-
                       </td>
 
                     </tr>
@@ -300,11 +298,10 @@ function AdminDashboard() {
 
           )}
 
-        </div>
+        </section>
 
-      </main>
-
-    </div>
+      </div>
+    </main>
   );
 }
 

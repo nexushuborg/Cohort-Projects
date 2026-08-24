@@ -4,11 +4,15 @@ import Navbar from "./components/common/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Search from "./pages/Search";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import PropertyDetails from "./pages/PropertyDetails";
 import Booking from "./pages/Booking";
 import MyTrips from "./pages/MyTrips";
 import Checkout from "./pages/Checkout";
+import GuestDashboard from "./pages/GuestDashboard";
+import MyListings from "./pages/host/MyListings";
+import CreateListing from "./pages/host/CreateListing";
+import HostDashboard from "./pages/host/HostDashboard";
 
 const router = createBrowserRouter([
   {
@@ -48,8 +52,24 @@ const router = createBrowserRouter([
         element: <Register />,
       },
       {
+        path: "dashboard",
+        element: <GuestDashboard />,
+      },
+      {
         path: "admin",
         element: <AdminDashboard />,
+      },
+      {
+        path: "host/listings",
+        element: <MyListings />,
+      },
+      {
+        path: "host/create-listing",
+        element: <CreateListing />,
+      },
+      {
+        path: "host/dashboard",
+        element: <HostDashboard />,
       },
     ],
   },
