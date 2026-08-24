@@ -13,6 +13,9 @@ import GuestDashboard from "./pages/GuestDashboard";
 import MyListings from "./pages/host/MyListings";
 import CreateListing from "./pages/host/CreateListing";
 import HostDashboard from "./pages/host/HostDashboard";
+import Users from "./pages/admin/Users";
+import Properties from "./pages/admin/Properties";
+import Bookings from "./pages/admin/Bookings";
 
 const router = createBrowserRouter([
   {
@@ -58,6 +61,18 @@ const router = createBrowserRouter([
       {
         path: "admin",
         element: <AdminDashboard />,
+      },
+      {
+      path: "admin/users",
+      element: <Users />,
+      },
+      {
+        path: "admin/properties",
+        element: <Properties />,
+      },
+      {
+        path: "admin/bookings",
+        element: <Bookings />,
       },
       {
         path: "host/listings",
