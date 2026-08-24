@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Search from "./pages/Search";
 import AdminDashboard from "./pages/AdminDashboard";
+import PropertyDetails from "./pages/PropertyDetails";
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
       {
         path: "admin",
         element: <AdminDashboard />,
+      },
+      {
+        path: "properties/:id",
+        element: <PropertyDetails />,
       },
     ],
   },
