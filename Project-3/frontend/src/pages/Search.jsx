@@ -24,12 +24,13 @@ function Search() {
   };
 
   const handleSearch = async () => {
-    setLoading(true);
-    setError("");
+  console.log("SEARCH BUTTON CLICKED");
 
+  setLoading(true);
+  setError("");
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/properties/search",
+        "http://localhost:5000/properties",
         {
           params: {
             city,
@@ -40,7 +41,7 @@ function Search() {
         }
       );
 
-      setProperties(response.data.data || []);
+      setProperties(response.data.data.items || []);
     } catch (err) {
       console.error(err);
       setError("Unable to fetch properties.");
