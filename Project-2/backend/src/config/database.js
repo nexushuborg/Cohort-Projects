@@ -7,19 +7,29 @@ let knexConfig;
 try {
   knexConfig = require('../../knexfile');
 } catch (e) {
-  // knexfile not yet created; provide inline fallback
   knexConfig = {};
 }
 
 const isTest = env.NODE_ENV === 'test';
 const nodeEnv = env.nodeEnv || env.NODE_ENV || 'development';
 
-// Build Knex config from environment
+// Build pg Pool config from DB_* env vars — same source as setup-db.js
+const poolConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432', 10),
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || '272006',
+  database: isTest
+    ? (process.env.DB_NAME ? process.env.DB_NAME + '_test' : 'marketplace_test')
+    : (process.env.DB_NAME || 'marketplace'),
+};
+
+// Build connection string for Knex from the same DB_* env vars
+const connectionString = `postgres://${poolConfig.user}:${poolConfig.password}@${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`;
+
 const dbConfig = knexConfig[nodeEnv] || {
   client: 'pg',
-  connection: isTest
-    ? (env.TEST_DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/marketplace_test')
-    : (env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/marketplace'),
+  connection: connectionString,
   migrations: {
     directory: './src/migrations',
   },
@@ -27,22 +37,8 @@ const dbConfig = knexConfig[nodeEnv] || {
 
 const db = knex(dbConfig);
 
-// ─── pg Pool (Person 1 repositories) ─────────────────────────
-const connectionString = isTest
-  ? env.TEST_DATABASE_URL
-  : env.DATABASE_URL
-    ? env.DATABASE_URL
-    : undefined;
-
-const pool = connectionString
-  ? new Pool({ connectionString })
-  : new Pool({
-      host: process.env.DB_HOST || '127.0.0.1',
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_NAME || (isTest ? 'marketplace_test' : 'marketplace'),
-    });
+// ─── pg Pool (Person 1 repositories + migrate.js) ────────────
+const pool = new Pool(poolConfig);
 
 pool.on('error', (err) => {
   console.error('Unexpected error on idle PostgreSQL client:', err);

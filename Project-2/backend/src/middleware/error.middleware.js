@@ -5,7 +5,7 @@ function errorHandler(err, req, res, next) {
     return next(err);
   }
 
-  let statusCode = err.statusCode || 500;
+  let statusCode = err.statusCode || err.status || 500;
   let code = err.code || 'INTERNAL_ERROR';
   let message = err.message || 'An unexpected error occurred';
   let details = err.details || null;

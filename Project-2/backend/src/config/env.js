@@ -9,12 +9,12 @@ const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   NODE_ENV: process.env.NODE_ENV || 'development',
 
-  // Database
-  databaseUrl: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/marketplace',
-  DATABASE_URL: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/marketplace',
-
-  testDatabaseUrl: process.env.TEST_DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/marketplace_test',
-  TEST_DATABASE_URL: process.env.TEST_DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/marketplace_test',
+  // Database — built from explicit DB_* variables only (no DATABASE_URL)
+  DB_HOST: process.env.DB_HOST || 'localhost',
+  DB_PORT: parseInt(process.env.DB_PORT || '5432', 10),
+  DB_USER: process.env.DB_USER || 'postgres',
+  DB_PASSWORD: process.env.DB_PASSWORD || '272006',
+  DB_NAME: process.env.DB_NAME || 'marketplace',
 
   // JWT
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-key-change-in-prod-12345',
