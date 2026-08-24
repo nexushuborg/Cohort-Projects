@@ -1,3 +1,5 @@
+const ownershipService = require('../ownership/ownership.service');
+jest.mock('../ownership/ownership.service');
 const service = require('./product.service');
 const repository = require('./product.repository');
 
@@ -7,6 +9,8 @@ jest.mock('./product.repository');
 describe('Product Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    ownershipService.verifyStoreOwnership.mockResolvedValue({ id: 'store-1' });
+    ownershipService.verifyProductOwnership.mockResolvedValue({ id: '1', store_id: 'store-1' });
   });
 
   // ─── generateSlug ───────────────────────────────────────────
@@ -193,6 +197,7 @@ describe('Product Service', () => {
     });
 
     it('should throw 404 if product not found', async () => {
+      ownershipService.verifyProductOwnership.mockRejectedValue(Object.assign(new Error('Product not found'), { status: 404, code: 'NOT_FOUND' }));
       repository.findById.mockResolvedValue(null);
 
       await expect(service.updateProduct('nonexistent', { title: 'Test' }))
@@ -223,6 +228,7 @@ describe('Product Service', () => {
     });
 
     it('should throw 404 if product not found', async () => {
+      ownershipService.verifyProductOwnership.mockRejectedValue(Object.assign(new Error('Product not found'), { status: 404, code: 'NOT_FOUND' }));
       repository.findById.mockResolvedValue(null);
 
       await expect(service.deleteProduct('nonexistent'))

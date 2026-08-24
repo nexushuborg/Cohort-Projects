@@ -21,7 +21,7 @@ router.get('/:skuId',
 
 // POST /products/:productId/skus — Create a SKU
 router.post('/',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(productParamsSchema),
   validate(createSkuSchema),
   controller.create
@@ -29,7 +29,7 @@ router.post('/',
 
 // PUT /products/:productId/skus/:skuId — Update a SKU
 router.put('/:skuId',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(skuParamsSchema),
   validate(updateSkuSchema),
   controller.update
@@ -37,7 +37,7 @@ router.put('/:skuId',
 
 // DELETE /products/:productId/skus/:skuId — Delete a SKU
 router.delete('/:skuId',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(skuParamsSchema),
   controller.remove
 );

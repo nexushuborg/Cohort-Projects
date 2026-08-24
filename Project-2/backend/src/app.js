@@ -18,6 +18,8 @@ const productRoutes = require('./modules/products/product.routes');
 const productImageRoutes = require('./modules/product-images/product-image.routes');
 const variantRoutes = require('./modules/variants/variant.routes');
 const skuRoutes = require('./modules/skus/sku.routes');
+const inventoryRoutes = require('./modules/inventory/inventory.routes');
+const cartRoutes = require('./modules/cart/cart.routes');
 
 const app = express();
 
@@ -79,6 +81,10 @@ app.use('/products', productRoutes);
 app.use('/products/:productId/images', productImageRoutes);
 app.use('/products/:productId/variants', variantRoutes);
 app.use('/products/:productId/skus', skuRoutes);
+app.use('/products/:productId/inventory', inventoryRoutes);
+
+// ─── Cart (Buyer Only) ─────────────────────────────────────
+app.use('/cart', cartRoutes);
 
 // ─── 404 Handler & Global Error Handler ──────────────────────
 app.use(notFoundHandler);

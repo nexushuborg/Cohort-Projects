@@ -6,7 +6,7 @@ const service = require('./product.service');
  */
 const create = async (req, res, next) => {
   try {
-    const product = await service.createProduct(req.body);
+    const product = await service.createProduct(req.body, req.user.id, req.user.role);
 
     return res.status(201).json({
       success: true,
@@ -100,7 +100,7 @@ const getByStoreId = async (req, res, next) => {
  */
 const update = async (req, res, next) => {
   try {
-    const product = await service.updateProduct(req.params.id, req.body);
+    const product = await service.updateProduct(req.params.id, req.body, req.user.id, req.user.role);
 
     return res.status(200).json({
       success: true,
@@ -117,7 +117,7 @@ const update = async (req, res, next) => {
  */
 const remove = async (req, res, next) => {
   try {
-    await service.deleteProduct(req.params.id);
+    await service.deleteProduct(req.params.id, req.user.id, req.user.role);
 
     return res.status(200).json({
       success: true,

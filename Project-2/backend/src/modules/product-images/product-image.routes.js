@@ -65,7 +65,7 @@ router.get('/',
 
 // POST /products/:productId/images — Upload an image
 router.post('/',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(productParamsSchema),
   upload.single('image'),
   controller.upload
@@ -73,14 +73,14 @@ router.post('/',
 
 // PUT /products/:productId/images/:imageId/primary — Set primary image
 router.put('/:imageId/primary',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(imageParamsSchema),
   controller.setPrimary
 );
 
 // DELETE /products/:productId/images/:imageId — Delete an image
 router.delete('/:imageId',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(imageParamsSchema),
   controller.remove
 );

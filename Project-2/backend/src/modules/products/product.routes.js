@@ -25,12 +25,12 @@ router.get('/:id', controller.getById);
 // ─── Protected Routes (Seller) ──────────────────────────────────
 
 // POST /products — Create a new product (seller only)
-router.post('/', authenticateToken, requireRole('seller'), validate(createProductSchema), controller.create);
+router.post('/', authenticateToken, requireRole('seller', 'admin'), validate(createProductSchema), controller.create);
 
 // PUT /products/:id — Update a product (seller, owner only)
-router.put('/:id', authenticateToken, requireRole('seller'), validate(updateProductSchema), controller.update);
+router.put('/:id', authenticateToken, requireRole('seller', 'admin'), validate(updateProductSchema), controller.update);
 
 // DELETE /products/:id — Delete a product (seller, owner only)
-router.delete('/:id', authenticateToken, requireRole('seller'), controller.remove);
+router.delete('/:id', authenticateToken, requireRole('seller', 'admin'), controller.remove);
 
 module.exports = router;
