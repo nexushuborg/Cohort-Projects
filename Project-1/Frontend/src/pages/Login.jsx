@@ -1,8 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import api from "../api/axios";
+import { loginUser } from "../api/authApi";
+import useAuthStore from "../stores/authStore";
 
 function Login() {
+  const navigate = useNavigate();
+
+  const login = useAuthStore((state) => state.login);
+
   const {
     register,
     handleSubmit,
@@ -10,24 +15,44 @@ function Login() {
   } = useForm();
 
   const onSubmit = async (data) => {
-  try {
-    const response = await api.post("/auth/login", data);
+    try {
+      const response = await loginUser(data);
 
-    console.log("Login successful:", response.data);
-  } catch (error) {
-    console.error("Login failed:", error);
-  }
-};
+      console.log("Login successful:", response);
+
+      const { user, accessToken, refreshToken } = response.data;
+
+      // Save authentication data in Zustand + localStorage
+      login({
+        user,
+        accessToken,
+        refreshToken,
+      });
+
+      // Redirect according to the role returned by the backend
+      if (user.role === "admin") {
+        navigate("/admin-dashboard");
+      } else if (user.role === "organizer") {
+        navigate("/organizer-dashboard");
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+
+      const message =
+        error.response?.data?.error?.message ||
+        "Login failed. Please check your email and password.";
+
+      alert(message);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-12">
-
       <div className="mx-auto max-w-md">
-
         <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-
           <div className="text-center">
-
             <h1 className="text-3xl font-bold text-slate-900">
               Welcome Back
             </h1>
@@ -35,17 +60,13 @@ function Login() {
             <p className="mt-2 text-slate-600">
               Login to continue to EventHub.
             </p>
-
           </div>
-
 
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="mt-8 space-y-5"
           >
-
             <div>
-
               <label
                 htmlFor="email"
                 className="block text-sm font-medium text-slate-700"
@@ -72,14 +93,10 @@ function Login() {
                   {errors.email.message}
                 </p>
               )}
-
             </div>
 
-
             <div>
-
               <div className="flex items-center justify-between">
-
                 <label
                   htmlFor="password"
                   className="block text-sm font-medium text-slate-700"
@@ -93,7 +110,6 @@ function Login() {
                 >
                   Forgot password?
                 </Link>
-
               </div>
 
               <input
@@ -111,9 +127,7 @@ function Login() {
                   {errors.password.message}
                 </p>
               )}
-
             </div>
-
 
             <button
               type="submit"
@@ -121,27 +135,19 @@ function Login() {
             >
               Login
             </button>
-
           </form>
 
-
           <p className="mt-6 text-center text-sm text-slate-600">
-
             Don't have an account?{" "}
-
             <Link
               to="/register"
               className="font-medium text-slate-900 hover:underline"
             >
               Create an account
             </Link>
-
           </p>
-
         </div>
-
       </div>
-
     </div>
   );
 }
