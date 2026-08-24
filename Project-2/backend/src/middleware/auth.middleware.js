@@ -1,59 +1,56 @@
-/**
- * AUTH MIDDLEWARE PLACEHOLDER
- * 
- * This file is a placeholder for Person 1's authentication implementation.
- * 
- * Expected interface:
- * - Reads JWT from Authorization header (Bearer token)
- * - Verifies the token
- * - Attaches user payload to req.user
- * - Returns 401 if no token, 403 if invalid
- * 
- * Expected req.user shape:
- * {
- *   sub: "user-uuid",
- *   email: "user@example.com",
- *   role: "buyer" | "seller" | "admin"
- * }
- * 
- * DO NOT use this placeholder in production.
- * Person 1 must replace this with real JWT verification.
- */
-
+const jwt = require('jsonwebtoken');
 const env = require('../config/env');
+const { createUnauthorizedError, createForbiddenError } = require('../utils/errors');
 
-// Temporary development-only middleware that reads user from header
-// REMOVE this and replace with real JWT auth from Person 1
-module.exports = function authenticateToken(req, res, next) {
-  // In development without Person 1's auth, allow setting user via headers
-  if (env.nodeEnv === 'development' && req.headers['x-dev-user-id']) {
-    req.user = {
-      sub: req.headers['x-dev-user-id'],
-      email: req.headers['x-dev-user-email'] || 'dev@test.com',
-      role: req.headers['x-dev-user-role'] || 'buyer',
-    };
-    return next();
-  }
-
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      error: { code: 'UNAUTHORIZED', message: 'Access token required' },
-    });
-  }
-
+function authMiddleware(req, res, next) {
   try {
-    const jwt = require('jsonwebtoken');
-    const user = jwt.verify(token, env.jwtSecret);
-    req.user = user;
+    // In development mode, allow test user headers if provided
+    if ((env.nodeEnv === 'development' || env.NODE_ENV === 'development') && req.headers['x-dev-user-id']) {
+      const devId = req.headers['x-dev-user-id'];
+      req.user = {
+        id: devId,
+        sub: devId,
+        email: req.headers['x-dev-user-email'] || 'dev@test.com',
+        role: req.headers['x-dev-user-role'] || 'buyer',
+        name: req.headers['x-dev-user-name'] || 'Dev User',
+      };
+      return next();
+    }
+
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw createUnauthorizedError('Authentication token is missing');
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      throw createUnauthorizedError('Authentication token is missing');
+    }
+
+    const secret = env.jwtSecret || env.JWT_SECRET;
+    const decoded = jwt.verify(token, secret);
+
+    const userId = decoded.sub || decoded.id;
+    req.user = {
+      id: userId,
+      sub: userId,
+      email: decoded.email,
+      role: decoded.role,
+      name: decoded.name,
+    };
+
     next();
-  } catch (err) {
-    return res.status(403).json({
-      success: false,
-      error: { code: 'FORBIDDEN', message: 'Invalid or expired access token' },
-    });
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return next(createUnauthorizedError('Token has expired'));
+    }
+    if (error.name === 'JsonWebTokenError') {
+      return next(createUnauthorizedError('Invalid token'));
+    }
+    next(error);
   }
-};
+}
+
+module.exports = authMiddleware;
+module.exports.authMiddleware = authMiddleware;
+module.exports.authenticateToken = authMiddleware;

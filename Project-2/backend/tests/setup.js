@@ -1,6 +1,23 @@
+const { runMigrations } = require('../src/migrations/migrate');
 const db = require('../src/config/database');
 
-// Clean up test database before each test suite
+beforeAll(async () => {
+  try {
+    await runMigrations();
+  } catch (err) {
+    console.error('Migration setup failed in test suite:', err.message);
+  }
+});
+
 afterAll(async () => {
-  await db.destroy();
+  if (db && typeof db.destroy === 'function') {
+    try {
+      await db.destroy();
+    } catch (e) {}
+  }
+  if (db && db.pool && typeof db.pool.end === 'function') {
+    try {
+      await db.pool.end();
+    } catch (e) {}
+  }
 });
