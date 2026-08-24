@@ -6,7 +6,8 @@ const morgan = require ('morgan');
 const { initDatabase } = require("./migrations/initDb.js");
 const { authRoute } = require("./modules/auth/auth.routes.js");
 const { bookingRoute } = require("./modules/bookings/bookings.routes.js");
-
+const { reviewRoute } = require("./modules/reviews/reviews.routes.js");
+const { propertyRoute } = require("./modules/properties/properties.routes.js");
 const app= express();
 const PORT =process.env.PORT;
 app.use(cors());
@@ -17,6 +18,9 @@ app.use(express.json());
 
 app.use("/api/auth", authRoute);
 app.use("/api/bookings", bookingRoute);
+app.use("/api/reviews", reviewRoute);
+app.use("/api/properties", propertyRoute);
+
 app.get ("/", (req,res)=>{
     res.send({
         success: true,
