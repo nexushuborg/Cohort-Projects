@@ -1,5 +1,5 @@
 const { runMigrations } = require('../src/migrations/migrate');
-const { pool } = require('../src/config/database');
+const db = require('../src/config/database');
 
 beforeAll(async () => {
   try {
@@ -10,5 +10,16 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await pool.end();
+  // Close Knex connection if available
+  if (db && typeof db.destroy === 'function') {
+    try {
+      await db.destroy();
+    } catch (e) {}
+  }
+  // Close pg Pool connection
+  if (db && db.pool && typeof db.pool.end === 'function') {
+    try {
+      await db.pool.end();
+    } catch (e) {}
+  }
 });

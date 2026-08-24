@@ -48,7 +48,9 @@ CREATE TABLE IF NOT EXISTS products (
   store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
   category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
   title VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
   description TEXT,
+  brand VARCHAR(255),
   price DECIMAL(10,2) NOT NULL,
   status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'archived')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -87,6 +89,7 @@ CREATE TABLE IF NOT EXISTS product_skus (
   sku_code VARCHAR(100) UNIQUE NOT NULL,
   price_override DECIMAL(10,2),
   stock_quantity INTEGER NOT NULL DEFAULT 0 CHECK (stock_quantity >= 0),
+  status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'inactive')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -181,7 +184,7 @@ CREATE TABLE IF NOT EXISTS store_reviews (
 CREATE INDEX IF NOT EXISTS idx_products_store ON products(store_id);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_status ON products(status);
-CREATE INDEX IF NOT EXISTS idx_products_search ON products USING GIN(to_tsvector('english', title || ' ' || COALESCE(description, '')));
+CREATE INDEX IF NOT EXISTS idx_products_search ON products USING GIN(to_tsvector('english', title || ' ' || COALESCE(description, '') || ' ' || COALESCE(brand, '')));
 CREATE INDEX IF NOT EXISTS idx_orders_buyer ON orders(buyer_id);
 CREATE INDEX IF NOT EXISTS idx_seller_orders_store ON seller_orders(store_id);
 CREATE INDEX IF NOT EXISTS idx_seller_orders_parent ON seller_orders(parent_order_id);

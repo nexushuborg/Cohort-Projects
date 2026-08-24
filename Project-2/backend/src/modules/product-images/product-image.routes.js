@@ -1,0 +1,88 @@
+const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const crypto = require('crypto');
+const router = express.Router({ mergeParams: true });
+const controller = require('./product-image.controller');
+const validate = require('../../middleware/validate.middleware');
+const { validateParams } = require('../../middleware/validate.middleware');
+const authenticateToken = require('../../middleware/auth.middleware');
+const requireRole = require('../../middleware/rbac.middleware');
+const {
+  productParamsSchema,
+  imageParamsSchema,
+} = require('./product-image.validation');
+
+const fs = require('fs');
+const uploadDir = path.join(process.cwd(), 'uploads', 'products');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// ─── Multer Configuration ───────────────────────────────────────
+// Storage: files saved to uploads/products/ with unique names
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = crypto.randomBytes(16).toString('hex');
+    const ext = path.extname(file.originalname);
+    cb(null, uniqueSuffix + ext);
+  },
+});
+
+// File filter: only jpg, png, webp
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Allowed: jpg, png, webp'), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+});
+
+// ─── Public Routes ──────────────────────────────────────────────
+
+// GET /products/:productId/images — Get all images for a product
+router.get('/',
+  validateParams(productParamsSchema),
+  controller.getByProductId
+);
+
+// ─── Protected Routes (Seller) ──────────────────────────────────
+
+// POST /products/:productId/images — Upload an image
+router.post('/',
+  authenticateToken, requireRole('seller'),
+  validateParams(productParamsSchema),
+  upload.single('image'),
+  controller.upload
+);
+
+// PUT /products/:productId/images/:imageId/primary — Set primary image
+router.put('/:imageId/primary',
+  authenticateToken, requireRole('seller'),
+  validateParams(imageParamsSchema),
+  controller.setPrimary
+);
+
+// DELETE /products/:productId/images/:imageId — Delete an image
+router.delete('/:imageId',
+  authenticateToken, requireRole('seller'),
+  validateParams(imageParamsSchema),
+  controller.remove
+);
+
+module.exports = router;

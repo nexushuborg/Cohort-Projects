@@ -14,6 +14,5 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = {
-  requireRole,
-};
+module.exports = requireRole;
+module.exports.requireRole = requireRole;
