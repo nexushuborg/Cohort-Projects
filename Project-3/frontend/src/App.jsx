@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Search from "./pages/Search";
 import AdminDashboard from "./pages/AdminDashboard";
 import PropertyDetails from "./pages/PropertyDetails";
+import Booking from "./pages/Booking";
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,8 @@ const router = createBrowserRouter([
         path: "search",
         element: <Search />,
       },
+        { path: "properties/:id/book", 
+          element: <Booking /> },
       {
         path: "login",
         element: <Login />,
