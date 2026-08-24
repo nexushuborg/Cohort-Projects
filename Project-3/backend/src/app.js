@@ -6,6 +6,8 @@ const morgan = require ('morgan');
 const { initDatabase } = require("./migrations/initDb.js");
 const { authRoute } = require("./modules/auth/auth.routes.js");
 const { bookingRoute } = require("./modules/bookings/bookings.routes.js");
+const { calendarRoute } = require("./modules/calendar/calendar.routes.js");
+const { paymentsRoute } = require("./modules/payments/payments.routes.js");
 
 const app= express();
 const PORT =process.env.PORT;
@@ -17,6 +19,8 @@ app.use(express.json());
 
 app.use("/api/auth", authRoute);
 app.use("/api/bookings", bookingRoute);
+app.use("/api/availability", calendarRoute);
+app.use("/api/payments", paymentsRoute);
 app.get ("/", (req,res)=>{
     res.send({
         success: true,
