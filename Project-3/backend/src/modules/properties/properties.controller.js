@@ -184,6 +184,133 @@ const updatePropertyStatus = async (req, res) => {
     }
 };
 
+const updateProperty = async (req, res) => {
+    const { id } = req.params;
+    const host_id = req.user.id;
+    const {
+        title, description, address, city, state, country,
+        price_per_night, max_guests, bedrooms, bathrooms, beds
+    } = req.body;
+
+    const updateQuery = `
+        UPDATE properties
+        SET title = COALESCE($1, title),
+            description = COALESCE($2, description),
+            address = COALESCE($3, address),
+            city = COALESCE($4, city),
+            state = COALESCE($5, state),
+            country = COALESCE($6, country),
+            price_per_night = COALESCE($7, price_per_night),
+            max_guests = COALESCE($8, max_guests),
+            bedrooms = COALESCE($9, bedrooms),
+            bathrooms = COALESCE($10, bathrooms),
+            beds = COALESCE($11, beds),
+            updated_at = NOW()
+        WHERE id = $12 AND host_id = $13
+        RETURNING *;
+    `;
+
+    try {
+        const result = await db.query(updateQuery, [
+            title, description, address, city, state, country,
+            price_per_night, max_guests, bedrooms, bathrooms, beds,
+            id, host_id
+        ]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                status: "failed",
+                message: "Property not found or unauthorized"
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Property updated successfully",
+            data: result.rows[0]
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to update property",
+            error: error
+        });
+    }
+};
+
+const deleteProperty = async (req, res) => {
+    const { id } = req.params;
+    const host_id = req.user.id;
+
+    const deleteQuery = `
+        DELETE FROM properties
+        WHERE id = $1 AND host_id = $2
+        RETURNING *;
+    `;
+
+    try {
+        const result = await db.query(deleteQuery, [id, host_id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                status: "failed",
+                message: "Property not found or unauthorized"
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Property deleted successfully",
+            data: result.rows[0]
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to delete property",
+            error: error
+        });
+    }
+};
+
+const uploadPropertyPhoto = async (req, res) => {
+    const { id } = req.params;
+    if (!req.file) {
+        return res.status(400).json({
+            status: "failed",
+            message: "No image file provided"
+        });
+    }
+
+    const photoUrl = `/uploads/${req.file.filename}`;
+    const insertPhotoQuery = `
+        INSERT INTO property_photos (property_id, url)
+        VALUES ($1, $2)
+        RETURNING *;
+    `;
+
+    try {
+        const result = await db.query(insertPhotoQuery, [id, photoUrl]);
+        return res.status(201).json({
+            status: "success",
+            message: "Property photo uploaded successfully",
+            data: result.rows[0]
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to save property photo",
+            error: error
+        });
+    }
+};
+
 module.exports = {
-    createProperty, getProperties, getPropertyById, getHostProperties, updatePropertyStatus
+    createProperty,
+    getProperties,
+    getPropertyById,
+    getHostProperties,
+    updatePropertyStatus,
+    updateProperty,
+    deleteProperty,
+    uploadPropertyPhoto
 };

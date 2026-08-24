@@ -136,6 +136,18 @@ const initDatabase = async () => {
             UNIQUE(booking_id, guest_id)
         );
 
+        -- 11. Guest Reviews Table (Host reviewing guest)
+        CREATE TABLE IF NOT EXISTS guest_reviews (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            booking_id UUID REFERENCES bookings(id) NOT NULL,
+            host_id UUID REFERENCES users(id) NOT NULL,
+            guest_id UUID REFERENCES users(id) NOT NULL,
+            rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+            text TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(booking_id, host_id)
+        );
+
         -- Indexes
         CREATE INDEX IF NOT EXISTS idx_properties_host ON properties(host_id);
         CREATE INDEX IF NOT EXISTS idx_properties_city ON properties(city);

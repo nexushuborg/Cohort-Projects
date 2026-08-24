@@ -133,8 +133,40 @@ const getUserDetails = async (req, res) => {
     }
 };
 
+const refreshToken = async (req, res) => {
+    const { token } = req.body;
+    if (!token) {
+        return res.status(400).json({
+            status: "failed",
+            message: "Refresh token is required"
+        });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
+        const newToken = jwt.sign(
+            { id: decoded.id, email: decoded.email, role: decoded.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        return res.status(200).json({
+            status: "success",
+            message: "Token refreshed successfully",
+            token: newToken
+        });
+    } catch (error) {
+        return res.status(401).json({
+            status: "failed",
+            message: "Invalid or expired refresh token",
+            error: error
+        });
+    }
+};
+
 module.exports = {
     createUser,
     loginUser,
-    getUserDetails
+    getUserDetails,
+    refreshToken
 };

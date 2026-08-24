@@ -199,9 +199,135 @@ const getGuestTrips = async (req, res) => {
     }
 };
 
+const getHostBookings = async (req, res) => {
+    const host_id = req.user.id;
+
+    const getBookingsQuery = `
+        SELECT b.*, p.title as property_title, u.name as guest_name, u.email as guest_email
+        FROM bookings b
+        JOIN properties p ON b.property_id = p.id
+        JOIN users u ON b.guest_id = u.id
+        WHERE p.host_id = $1
+        ORDER BY b.created_at DESC;
+    `;
+
+    try {
+        const result = await db.query(getBookingsQuery, [host_id]);
+
+        return res.status(200).json({
+            status: "success",
+            message: "Retrieved host bookings successfully",
+            data: result.rows
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to fetch host bookings",
+            error: error
+        });
+    }
+};
+
+const getBookingById = async (req, res) => {
+    const { id } = req.params;
+
+    const getBookingQuery = `
+        SELECT b.*, p.title as property_title, p.address, p.city, p.country,
+               u.name as guest_name, u.email as guest_email
+        FROM bookings b
+        JOIN properties p ON b.property_id = p.id
+        JOIN users u ON b.guest_id = u.id
+        WHERE b.id = $1;
+    `;
+
+    try {
+        const result = await db.query(getBookingQuery, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                status: "failed",
+                message: "Booking not found"
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Retrieved booking details successfully",
+            data: result.rows[0]
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to fetch booking details",
+            error: error
+        });
+    }
+};
+
+const cancelBooking = async (req, res) => {
+    const { id } = req.params;
+    const user_id = req.user.id;
+    const { cancellation_reason } = req.body;
+
+    const checkBookingQuery = `
+        SELECT b.*, p.host_id FROM bookings b
+        JOIN properties p ON b.property_id = p.id
+        WHERE b.id = $1;
+    `;
+
+    try {
+        const bookingResult = await db.query(checkBookingQuery, [id]);
+
+        if (bookingResult.rows.length === 0) {
+            return res.status(404).json({
+                status: "failed",
+                message: "Booking not found"
+            });
+        }
+
+        const booking = bookingResult.rows[0];
+
+        if (booking.guest_id !== user_id && booking.host_id !== user_id && req.user.role !== 'admin') {
+            return res.status(403).json({
+                status: "failed",
+                message: "Unauthorized to cancel this booking"
+            });
+        }
+
+        const updateCancelQuery = `
+            UPDATE bookings
+            SET status = 'cancelled', updated_at = NOW()
+            WHERE id = $1
+            RETURNING *;
+        `;
+        const result = await db.query(updateCancelQuery, [id]);
+
+        const removeBlockQuery = `
+            DELETE FROM availability_blocks
+            WHERE property_id = $1 AND start_date = $2 AND end_date = $3 AND reason = 'booking';
+        `;
+        await db.query(removeBlockQuery, [booking.property_id, booking.check_in, booking.check_out]);
+
+        return res.status(200).json({
+            status: "success",
+            message: "Booking cancelled successfully",
+            data: result.rows[0]
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to cancel booking",
+            error: error
+        });
+    }
+};
+
 module.exports = {
     createBooking,
     approveBooking,
     declineBooking,
-    getGuestTrips
+    getGuestTrips,
+    getHostBookings,
+    getBookingById,
+    cancelBooking
 };
