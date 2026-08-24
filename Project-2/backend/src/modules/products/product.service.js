@@ -1,4 +1,5 @@
 const repository = require('./product.repository');
+const { verifyProductOwnership, verifyStoreOwnership } = require('../ownership/ownership.service');
 
 /**
  * Generate a URL-friendly slug from a product title
@@ -27,8 +28,12 @@ const ensureUniqueSlug = async (baseSlug, excludeId = null) => {
 
 /**
  * Create a new product
+ * Enforces: seller can only create products for their own store.
  */
-const createProduct = async (data) => {
+const createProduct = async (data, userId, userRole) => {
+  // Ownership: seller can only create products for their own store
+  await verifyStoreOwnership(userId, data.storeId, userRole);
+
   // Generate slug if not provided
   let slug = data.slug || generateSlug(data.title);
   slug = await ensureUniqueSlug(slug);
@@ -91,16 +96,11 @@ const getProductsByStoreId = async (storeId, pagination) => {
 
 /**
  * Update a product
+ * Enforces: seller can only update their own products.
  */
-const updateProduct = async (id, data) => {
-  // Verify product exists
-  const existing = await repository.findById(id);
-  if (!existing) {
-    const error = new Error('Product not found');
-    error.status = 404;
-    error.code = 'NOT_FOUND';
-    throw error;
-  }
+const updateProduct = async (id, data, userId, userRole) => {
+  // Ownership: seller can only update their own products
+  const existing = await verifyProductOwnership(userId, id, userRole);
 
   // If title is being updated and no explicit slug, regenerate slug
   let updateData = { ...data };
@@ -130,15 +130,11 @@ const updateProduct = async (id, data) => {
 
 /**
  * Delete a product
+ * Enforces: seller can only delete their own products.
  */
-const deleteProduct = async (id) => {
-  const existing = await repository.findById(id);
-  if (!existing) {
-    const error = new Error('Product not found');
-    error.status = 404;
-    error.code = 'NOT_FOUND';
-    throw error;
-  }
+const deleteProduct = async (id, userId, userRole) => {
+  // Ownership: seller can only delete their own products
+  const existing = await verifyProductOwnership(userId, id, userRole);
 
   return repository.remove(id);
 };

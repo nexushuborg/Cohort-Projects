@@ -1,3 +1,5 @@
+const ownershipService = require("../ownership/ownership.service");
+jest.mock("../ownership/ownership.service");
 const service = require('./variant.service');
 const repository = require('./variant.repository');
 const productRepository = require('../products/product.repository');
@@ -6,19 +8,23 @@ jest.mock('./variant.repository');
 jest.mock('../products/product.repository');
 
 describe('Variant Service', () => {
-  beforeEach(() => { jest.clearAllMocks(); });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    ownershipService.verifyStoreOwnership.mockResolvedValue({ id: "store-1" });
+    ownershipService.verifyProductOwnership.mockResolvedValue({ id: "1", store_id: "store-1" });
+  });
   const mockProduct = { id: '22222222-2222-2222-2222-222222222222', name: 'T-Shirt' };
   const mockType = { id: '44444444-4444-4444-4444-444444444444', product_id: mockProduct.id, name: 'Color', created_at: new Date().toISOString() };
   const mockOption = { id: '55555555-5555-5555-5555-555555555555', variant_type_id: mockType.id, value: 'Red', created_at: new Date().toISOString() };
 
   describe('createVariantType', () => {
     it('should create', async () => { productRepository.findById.mockResolvedValue(mockProduct); repository.typeNameExists.mockResolvedValue(false); repository.createType.mockResolvedValue(mockType); const r = await service.createVariantType(mockProduct.id, { name: 'Color' }); expect(r.name).toBe('Color'); });
-    it('should throw 404', async () => { productRepository.findById.mockResolvedValue(null); await expect(service.createVariantType('n', { name: 'C' })).rejects.toThrow('Product not found'); });
+    it('should throw 404', async () => { ownershipService.verifyProductOwnership.mockRejectedValue(Object.assign(new Error('Product not found'), { status: 404, code: 'NOT_FOUND' })); productRepository.findById.mockResolvedValue(null); await expect(service.createVariantType('n', { name: 'C' })).rejects.toThrow('Product not found'); });
     it('should throw 409', async () => { productRepository.findById.mockResolvedValue(mockProduct); repository.typeNameExists.mockResolvedValue(true); await expect(service.createVariantType(mockProduct.id, { name: 'C' })).rejects.toThrow('already exists'); });
   });
   describe('getVariantTypesByProductId', () => {
     it('should return types', async () => { productRepository.findById.mockResolvedValue(mockProduct); repository.findTypesByProductId.mockResolvedValue([mockType]); const r = await service.getVariantTypesByProductId(mockProduct.id); expect(r).toHaveLength(1); });
-    it('should throw 404', async () => { productRepository.findById.mockResolvedValue(null); await expect(service.getVariantTypesByProductId('n')).rejects.toThrow('Product not found'); });
+    it('should throw 404', async () => { ownershipService.verifyProductOwnership.mockRejectedValue(Object.assign(new Error('Product not found'), { status: 404, code: 'NOT_FOUND' })); productRepository.findById.mockResolvedValue(null); await expect(service.getVariantTypesByProductId('n')).rejects.toThrow('Product not found'); });
   });
   describe('getVariantTypeById', () => {
     it('should return with options', async () => { productRepository.findById.mockResolvedValue(mockProduct); repository.findTypeById.mockResolvedValue(mockType); repository.findOptionsByTypeId.mockResolvedValue([mockOption]); const r = await service.getVariantTypeById(mockProduct.id, mockType.id); expect(r.options).toHaveLength(1); });
@@ -39,7 +45,7 @@ describe('Variant Service', () => {
     it('should create', async () => { productRepository.findById.mockResolvedValue(mockProduct); repository.findTypeById.mockResolvedValue(mockType); repository.optionValueExists.mockResolvedValue(false); repository.createOption.mockResolvedValue(mockOption); const r = await service.createVariantOption(mockProduct.id, mockType.id, { value: 'Red' }); expect(r.value).toBe('Red'); });
     it('should throw 409', async () => { productRepository.findById.mockResolvedValue(mockProduct); repository.findTypeById.mockResolvedValue(mockType); repository.optionValueExists.mockResolvedValue(true); await expect(service.createVariantOption(mockProduct.id, mockType.id, { value: 'R' })).rejects.toThrow('already exists'); });
     it('should throw wrong product', async () => { productRepository.findById.mockResolvedValue(mockProduct); repository.findTypeById.mockResolvedValue({ ...mockType, product_id: 'w' }); await expect(service.createVariantOption(mockProduct.id, mockType.id, { value: 'R' })).rejects.toThrow('does not belong'); });
-    it('should throw 404 product', async () => { productRepository.findById.mockResolvedValue(null); await expect(service.createVariantOption('n', mockType.id, { value: 'R' })).rejects.toThrow('Product not found'); });
+    it('should throw 404 product', async () => { ownershipService.verifyProductOwnership.mockRejectedValue(Object.assign(new Error('Product not found'), { status: 404, code: 'NOT_FOUND' })); productRepository.findById.mockResolvedValue(null); await expect(service.createVariantOption('n', mockType.id, { value: 'R' })).rejects.toThrow('Product not found'); });
     it('should throw 404 type', async () => { productRepository.findById.mockResolvedValue(mockProduct); repository.findTypeById.mockResolvedValue(null); await expect(service.createVariantOption(mockProduct.id, 'n', { value: 'R' })).rejects.toThrow('not found'); });
   });
   describe('updateVariantOption', () => {

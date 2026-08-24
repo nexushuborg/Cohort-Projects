@@ -31,7 +31,7 @@ router.get('/:variantTypeId',
 
 // POST /products/:productId/variants — Create a variant type
 router.post('/',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(productParamsSchema),
   validate(createVariantTypeSchema),
   controller.createType
@@ -39,7 +39,7 @@ router.post('/',
 
 // PUT /products/:productId/variants/:variantTypeId — Update a variant type
 router.put('/:variantTypeId',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(variantTypeParamsSchema),
   validate(updateVariantTypeSchema),
   controller.updateType
@@ -47,7 +47,7 @@ router.put('/:variantTypeId',
 
 // DELETE /products/:productId/variants/:variantTypeId — Delete a variant type
 router.delete('/:variantTypeId',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(variantTypeParamsSchema),
   controller.deleteType
 );
@@ -56,7 +56,7 @@ router.delete('/:variantTypeId',
 
 // POST /products/:productId/variants/:variantTypeId/options — Create an option
 router.post('/:variantTypeId/options',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(variantTypeParamsSchema),
   validate(createVariantOptionSchema),
   controller.createOption
@@ -64,7 +64,7 @@ router.post('/:variantTypeId/options',
 
 // PUT /products/:productId/variants/:variantTypeId/options/:optionId — Update an option
 router.put('/:variantTypeId/options/:optionId',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(variantOptionParamsSchema),
   validate(updateVariantOptionSchema),
   controller.updateOption
@@ -72,7 +72,7 @@ router.put('/:variantTypeId/options/:optionId',
 
 // DELETE /products/:productId/variants/:variantTypeId/options/:optionId — Delete an option
 router.delete('/:variantTypeId/options/:optionId',
-  authenticateToken, requireRole('seller'),
+  authenticateToken, requireRole('seller', 'admin'),
   validateParams(variantOptionParamsSchema),
   controller.deleteOption
 );

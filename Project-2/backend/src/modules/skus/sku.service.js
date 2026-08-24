@@ -1,5 +1,6 @@
 const repository = require('./sku.repository');
 const productRepository = require('../products/product.repository');
+const { verifyProductOwnership } = require('../ownership/ownership.service');
 
 const validateVariantOptions = async (productId, variantOptionIds) => {
   const options = [];
@@ -14,9 +15,8 @@ const validateVariantOptions = async (productId, variantOptionIds) => {
   return options;
 };
 
-const createSku = async (productId, data) => {
-  const product = await productRepository.findById(productId);
-  if (!product) { const error = new Error('Product not found'); error.status = 404; error.code = 'NOT_FOUND'; throw error; }
+const createSku = async (productId, data, userId, userRole) => {
+  await verifyProductOwnership(userId, productId, userRole);
   const codeExists = await repository.skuCodeExists(data.skuCode);
   if (codeExists) { const error = new Error('A SKU with this code already exists'); error.status = 409; error.code = 'CONFLICT'; throw error; }
   await validateVariantOptions(productId, data.variantOptionIds);
@@ -47,9 +47,8 @@ const getSkuById = async (productId, skuId) => {
   return sku;
 };
 
-const updateSku = async (productId, skuId, data) => {
-  const product = await productRepository.findById(productId);
-  if (!product) { const error = new Error('Product not found'); error.status = 404; error.code = 'NOT_FOUND'; throw error; }
+const updateSku = async (productId, skuId, data, userId, userRole) => {
+  await verifyProductOwnership(userId, productId, userRole);
   const existing = await repository.findSkuById(skuId);
   if (!existing) { const error = new Error('SKU not found'); error.status = 404; error.code = 'NOT_FOUND'; throw error; }
   if (existing.product_id !== productId) { const error = new Error('SKU does not belong to this product'); error.status = 400; error.code = 'VALIDATION_ERROR'; throw error; }
@@ -80,9 +79,8 @@ const updateSku = async (productId, skuId, data) => {
   return repository.findSkuWithVariants(skuId);
 };
 
-const deleteSku = async (productId, skuId) => {
-  const product = await productRepository.findById(productId);
-  if (!product) { const error = new Error('Product not found'); error.status = 404; error.code = 'NOT_FOUND'; throw error; }
+const deleteSku = async (productId, skuId, userId, userRole) => {
+  await verifyProductOwnership(userId, productId, userRole);
   const existing = await repository.findSkuById(skuId);
   if (!existing) { const error = new Error('SKU not found'); error.status = 404; error.code = 'NOT_FOUND'; throw error; }
   if (existing.product_id !== productId) { const error = new Error('SKU does not belong to this product'); error.status = 400; error.code = 'VALIDATION_ERROR'; throw error; }
