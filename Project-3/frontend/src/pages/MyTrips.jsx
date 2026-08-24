@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyBookings } from "../api/bookingApi";
+import BookingCard from "../components/booking/BookingCard";
 
 function MyTrips() {
   const [bookings, setBookings] = useState([]);
@@ -105,91 +106,11 @@ function MyTrips() {
         {!error && bookings.length > 0 && (
           <div className="mt-8 space-y-5">
             {bookings.map((booking) => (
-              <div
+              <BookingCard
                 key={booking.id}
-                className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
-              >
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      {booking.property_title ||
-                        booking.title ||
-                        "Your Rental"}
-                    </h2>
-
-                    <p className="mt-1 text-sm text-gray-500">
-                      Booking ID: {booking.id}
-                    </p>
-                  </div>
-
-                  <span
-                    className={`w-fit rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusClass(
-                      booking.status
-                    )}`}
-                  >
-                    {booking.status}
-                  </span>
-
-                </div>
-
-                <div className="mt-6 grid gap-5 border-t border-gray-100 pt-6 sm:grid-cols-3">
-
-                  <div>
-                    <p className="text-xs font-medium uppercase text-gray-400">
-                      Check-in
-                    </p>
-
-                    <p className="mt-1 font-medium text-gray-900">
-                      {booking.check_in}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-medium uppercase text-gray-400">
-                      Check-out
-                    </p>
-
-                    <p className="mt-1 font-medium text-gray-900">
-                      {booking.check_out}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-medium uppercase text-gray-400">
-                      Guests
-                    </p>
-
-                    <p className="mt-1 font-medium text-gray-900">
-                      {booking.guests}
-                    </p>
-                  </div>
-
-                </div>
-
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-5">
-
-                  <div>
-                    <span className="text-sm text-gray-500">
-                      Total
-                    </span>
-
-                    <span className="ml-2 font-semibold text-gray-900">
-                      ₹{booking.total_price ?? booking.total_amount ?? 0}
-                    </span>
-                  </div>
-
-                  {booking.status === "approved" && (
-                    <Link
-                      to={`/payments/${booking.id}`}
-                      className="rounded-lg bg-rose-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-600"
-                    >
-                      Make Payment
-                    </Link>
-                  )}
-
-                </div>
-              </div>
+                booking={booking}
+                isHost={false}
+              />
             ))}
           </div>
         )}

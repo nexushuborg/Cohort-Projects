@@ -1,20 +1,30 @@
 import { useNavigate } from "react-router-dom";
 
-const BookingSummary = ({ property, nights = 1, guestsCount = 1 }) => {
+const BookingSummary = ({
+  property,
+  booking,
+  nights = 1,
+  guestsCount = 1,
+}) => {
   const navigate = useNavigate();
 
-  const pricePerNight = property?.price_per_night || 0;
+  const pricePerNight =
+    Number(property?.price_per_night) || 0;
+
   const subtotal = nights * pricePerNight;
-  const platformFee = nights > 0 ? 100 : 0;
-  const gst = Math.floor(subtotal * 0.18);
-  const total = subtotal + platformFee + gst;
+
+  // Use the amount calculated by the backend when available.
+  const total =
+    Number(booking?.total_price) || subtotal;
 
   const handlePayment = () => {
-    if (nights <= 0) return;
+    if (!booking?.id || total <= 0) return;
 
     navigate("/checkout", {
       state: {
+        bookingId: booking.id,
         property,
+        booking,
         nights,
         guestsCount,
         total,
@@ -23,52 +33,87 @@ const BookingSummary = ({ property, nights = 1, guestsCount = 1 }) => {
   };
 
   return (
-    <div className="w-[350px] bg-white p-6 rounded-2xl border border-gray-200 shadow-xl h-fit sticky top-24">
-      <h2 className="text-xl font-bold mb-6 border-b border-gray-100 pb-4 text-gray-900">
+    <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-xl">
+
+      <h2 className="mb-6 border-b border-gray-100 pb-4 text-xl font-bold text-gray-900">
         Booking Summary
       </h2>
 
-      <div className="space-y-4 mb-8">
+      <div className="space-y-4">
+
+        <div>
+          <p className="text-sm text-gray-500">
+            Property
+          </p>
+
+          <p className="mt-1 font-semibold text-gray-900">
+            {property?.title || "Property"}
+          </p>
+        </div>
+
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">
-            {property?.title || "Property"} ({nights} Nights)
+            Price per night
           </span>
-          <span className="font-semibold text-gray-900">₹{subtotal}</span>
+
+          <span className="font-semibold text-gray-900">
+            ₹{pricePerNight}
+          </span>
         </div>
 
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Platform Fee</span>
-          <span className="font-semibold text-gray-900">₹{platformFee}</span>
+          <span className="text-gray-500">
+            Nights
+          </span>
+
+          <span className="font-semibold text-gray-900">
+            {nights}
+          </span>
         </div>
 
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">GST (18%)</span>
-          <span className="font-semibold text-gray-900">₹{gst}</span>
+          <span className="text-gray-500">
+            Guests
+          </span>
+
+          <span className="font-semibold text-gray-900">
+            {guestsCount}
+          </span>
         </div>
 
-        <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-4 mt-4">
-          <span className="text-rose-500">Total Amount</span>
-          <span className="text-rose-500">₹{total}</span>
+        <div className="flex justify-between border-t border-gray-200 pt-4 text-lg font-bold">
+          <span className="text-gray-900">
+            Total
+          </span>
+
+          <span className="text-rose-500">
+            ₹{total}
+          </span>
         </div>
+
+      </div>
+
+      <div className="mt-6 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-700">
+        Booking status:{" "}
+        <strong className="capitalize">
+          {booking?.status || "pending"}
+        </strong>
       </div>
 
       <button
         onClick={handlePayment}
-        disabled={nights <= 0}
-        className={`w-full py-4 rounded-xl font-bold transition-all duration-200 ${
-          nights > 0
-            ? "bg-rose-500 text-white hover:scale-[1.02] cursor-pointer shadow-lg shadow-rose-500/20"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+        disabled={!booking?.id || booking?.status !== "approved"}
+        className={`mt-6 w-full rounded-xl py-4 font-bold transition ${
+          booking?.id && booking?.status === "approved"
+            ? "bg-rose-500 text-white hover:bg-rose-600"
+            : "cursor-not-allowed bg-gray-300 text-gray-500"
         }`}
       >
-        Proceed to Payment
+        {booking?.status === "approved"
+          ? "Proceed to Payment"
+          : "Waiting for Host Approval"}
       </button>
 
-      {nights <= 0 && (
-        <p className="text-xs text-center text-red-500 mt-3 font-medium">
-          Please select valid dates
-        </p>
-      )}
     </div>
   );
 };

@@ -6,11 +6,9 @@ import Register from "./pages/Register";
 import Search from "./pages/Search";
 import AdminDashboard from "./pages/AdminDashboard";
 import PropertyDetails from "./pages/PropertyDetails";
-<<<<<<< Updated upstream
 import Booking from "./pages/Booking";
-=======
 import MyTrips from "./pages/MyTrips";
->>>>>>> Stashed changes
+import Checkout from "./pages/Checkout";
 
 const router = createBrowserRouter([
   {
@@ -25,8 +23,22 @@ const router = createBrowserRouter([
         path: "search",
         element: <Search />,
       },
-        { path: "properties/:id/book", 
-          element: <Booking /> },
+      {
+        path: "properties/:id",
+        element: <PropertyDetails />,
+      },
+      {
+        path: "properties/:id/book",
+        element: <Booking />,
+      },
+      {
+        path: "trips",
+        element: <MyTrips />,
+      },
+      {
+        path: "checkout",
+        element: <Checkout />,
+      },
       {
         path: "login",
         element: <Login />,
@@ -38,14 +50,6 @@ const router = createBrowserRouter([
       {
         path: "admin",
         element: <AdminDashboard />,
-      },
-      {
-        path: "properties/:id",
-        element: <PropertyDetails />,
-      },
-      {
-         path:"/trips",
-         element:<MyTrips />,
       },
     ],
   },
