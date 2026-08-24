@@ -41,7 +41,7 @@ const initDatabase = async () => {
             ('TV'), ('Hot Tub'), ('Fireplace'), ('Dedicated Workspace'), ('Pet Friendly')
         ON CONFLICT (name) DO NOTHING;
 
-        -- 4. Properties Table
+                -- 4. Properties Table
         CREATE TABLE IF NOT EXISTS properties (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             host_id UUID REFERENCES users(id) NOT NULL,
@@ -52,11 +52,17 @@ const initDatabase = async () => {
             city VARCHAR(100) NOT NULL,
             state VARCHAR(100),
             country VARCHAR(100) NOT NULL,
+            zip_code VARCHAR(20),
+            latitude DECIMAL(10,8),
+            longitude DECIMAL(11,8),
             price_per_night DECIMAL(10,2) NOT NULL,
             max_guests INTEGER NOT NULL DEFAULT 1,
             bedrooms INTEGER NOT NULL DEFAULT 1,
             bathrooms INTEGER NOT NULL DEFAULT 1,
             beds INTEGER NOT NULL DEFAULT 1,
+            min_nights INTEGER DEFAULT 1,
+            max_nights INTEGER DEFAULT 30,
+            cancellation_policy VARCHAR(20) DEFAULT 'moderate' CHECK (cancellation_policy IN ('flexible', 'moderate', 'strict')),
             status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'unlisted')),
             created_at TIMESTAMP DEFAULT NOW(),
             updated_at TIMESTAMP DEFAULT NOW()
@@ -126,7 +132,8 @@ const initDatabase = async () => {
             location_rating INTEGER CHECK (location_rating >= 1 AND location_rating <= 5),
             value_rating INTEGER CHECK (value_rating >= 1 AND value_rating <= 5),
             text TEXT,
-            created_at TIMESTAMP DEFAULT NOW()
+            created_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(booking_id, guest_id)
         );
 
         -- Indexes

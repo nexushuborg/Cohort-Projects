@@ -8,6 +8,9 @@ const { authRoute } = require("./modules/auth/auth.routes.js");
 const { bookingRoute } = require("./modules/bookings/bookings.routes.js");
 const { reviewRoute } = require("./modules/reviews/reviews.routes.js");
 const { propertyRoute } = require("./modules/properties/properties.routes.js");
+const { calendarRoute } = require("./modules/calendar/calendar.routes.js");
+const { paymentsRoute } = require("./modules/payments/payments.routes.js");
+
 const app= express();
 const PORT =process.env.PORT;
 app.use(cors());
@@ -21,6 +24,8 @@ app.use("/api/bookings", bookingRoute);
 app.use("/api/reviews", reviewRoute);
 app.use("/api/properties", propertyRoute);
 
+app.use("/api/availability", calendarRoute);
+app.use("/api/payments", paymentsRoute);
 app.get ("/", (req,res)=>{
     res.send({
         success: true,

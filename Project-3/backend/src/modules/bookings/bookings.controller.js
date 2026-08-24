@@ -51,6 +51,23 @@ const createBooking = async (req, res) => {
             });
         }
 
+        const minNights = property.min_nights || 1;
+        const maxNights = property.max_nights || 30;
+
+        if (total_nights < minNights) {
+            return res.status(400).json({
+                status: "failed",
+                message: `Stay duration of ${total_nights} nights is below the minimum limit of ${minNights} nights required by the host.`
+            });
+        }
+
+        if (total_nights > maxNights) {
+            return res.status(400).json({
+                status: "failed",
+                message: `Stay duration of ${total_nights} nights exceeds the maximum limit of ${maxNights} nights.`
+            });
+        }
+
         const total_price = total_nights * parseFloat(property.price_per_night);
 
         const createBookingQuery = `
