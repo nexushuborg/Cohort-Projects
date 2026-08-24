@@ -1,7 +1,14 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 function Navbar() {
-  const isLoggedIn = false;
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <>
@@ -33,7 +40,7 @@ function Navbar() {
               Search
             </Link>
 
-            {!isLoggedIn ? (
+            {!isAuthenticated ? (
               <>
                 <Link
                   to="/login"
@@ -51,14 +58,35 @@ function Navbar() {
               </>
             ) : (
               <>
+                {user?.role === "host" && (
+                  <Link
+                    to="/host"
+                    className="text-gray-600 transition hover:text-rose-500"
+                  >
+                    Host Dashboard
+                  </Link>
+                )}
+
+                {user?.role === "admin" && (
+                  <Link
+                    to="/admin"
+                    className="text-gray-600 transition hover:text-rose-500"
+                  >
+                    Admin
+                  </Link>
+                )}
+
                 <Link
                   to="/profile"
-                  className="text-gray-600 hover:text-rose-500"
+                  className="text-gray-600 transition hover:text-rose-500"
                 >
                   Profile
                 </Link>
 
-                <button className="rounded-lg bg-gray-900 px-5 py-2.5 text-white hover:bg-gray-800">
+                <button
+                  onClick={handleLogout}
+                  className="rounded-lg bg-gray-900 px-5 py-2.5 text-white transition hover:bg-gray-800"
+                >
                   Logout
                 </button>
               </>
