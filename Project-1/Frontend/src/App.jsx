@@ -1,4 +1,8 @@
+import { useEffect } from "react";
 import { Route, Routes, BrowserRouter } from "react-router-dom";
+import { getCurrentUser } from "./api/authApi";
+import useAuthStore from "./stores/authStore";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import CreateEvent from "./pages/CreateEvent";
 import Navbar from "./components/Navbar";
@@ -16,28 +20,33 @@ import OrganizerDashboard from "./pages/OrganizerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const setUser = useAuthStore((state) => state.setUser);
+  const logout = useAuthStore((state) => state.logout);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    getCurrentUser().then((response) => setUser(response.data)).catch(logout);
+  }, [accessToken, setUser, logout]);
+
   return (
     <BrowserRouter>
       <Navbar />
 
       <Routes>
-        
-        <Route path="/create-event" element={<CreateEvent />} />
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/profile" element={<Profile />} />
         <Route path="/events" element={<Events />} />
         <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/my-bookings" element={<MyBookings />} />
-        <Route path="/my-tickets" element={<MyTickets />} />
-        <Route
-          path="/organizer-dashboard"
-          element={<OrganizerDashboard />}
-        />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+        <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+        <Route path="/my-tickets" element={<ProtectedRoute><MyTickets /></ProtectedRoute>} />
+        <Route path="/create-event" element={<ProtectedRoute roles={["organizer", "admin"]}><CreateEvent /></ProtectedRoute>} />
+        <Route path="/organizer-dashboard" element={<ProtectedRoute roles={["organizer", "admin"]}><OrganizerDashboard /></ProtectedRoute>} />
+        <Route path="/admin-dashboard" element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,226 +1,34 @@
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { createEvent, createTicketTier } from "../api/eventApi";
+import { createVenue, getVenues, addSeats } from "../api/venueApi";
+import { useEffect, useState } from "react";
 
 function CreateEvent() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
-
-  const onSubmit = (data) => {
-    console.log("Create Event Data:", data);
+  const navigate = useNavigate();
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm();
+  const [venues, setVenues] = useState([]); const [newVenue, setNewVenue] = useState(false);
+  useEffect(() => { getVenues().then((response) => setVenues(response.data.items)).catch(() => {}); }, []);
+  useEffect(() => { if (newVenue) setValue("venueCountry", "India"); }, [newVenue, setValue]);
+  const onSubmit = async (data) => {
+    try {
+      let venueId = data.venueId || null;
+      if (newVenue) { const venue = await createVenue({ name: data.venueName, address: data.venueAddress, city: data.venueCity, country: data.venueCountry || "India", capacity: Number(data.venueCapacity) }); venueId = venue.data.id; const count = Number(data.seatCount || 0); if (count) await addSeats(venueId, Array.from({ length: count }, (_, i) => ({ seatNumber: `S${i + 1}` }))); }
+      const event = await createEvent({ title: data.title, description: data.description, category: data.category, venueId, eventDate: new Date(`${data.date}T${data.time}`).toISOString() });
+      await createTicketTier(event.data.id, { name: data.tierName, price: Number(data.price), totalQuantity: Number(data.quantity) });
+      navigate("/organizer-dashboard");
+    } catch (error) { alert(error.response?.data?.error?.message || "The event could not be created."); }
   };
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-4xl px-6 py-10">
-          <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-            Organizer
-          </p>
-
-          <h1 className="mt-2 text-4xl font-bold text-slate-900">
-            Create Event
-          </h1>
-
-          <p className="mt-3 text-slate-600">
-            Add the details of your new event.
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-4xl px-6 py-10">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm"
-        >
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700">
-                Event Title
-              </label>
-
-              <input
-                type="text"
-                placeholder="Enter event title"
-                {...register("title", {
-                  required: "Event title is required.",
-                })}
-                className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-slate-900"
-              />
-
-              {errors.title && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.title.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Date
-              </label>
-
-              <input
-                type="date"
-                {...register("date", {
-                  required: "Date is required.",
-                })}
-                className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-slate-900"
-              />
-
-              {errors.date && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.date.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Time
-              </label>
-
-              <input
-                type="time"
-                {...register("time", {
-                  required: "Time is required.",
-                })}
-                className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-slate-900"
-              />
-
-              {errors.time && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.time.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Location
-              </label>
-
-              <input
-                type="text"
-                placeholder="Kolkata"
-                {...register("location", {
-                  required: "Location is required.",
-                })}
-                className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-slate-900"
-              />
-
-              {errors.location && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.location.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Venue
-              </label>
-
-              <input
-                type="text"
-                placeholder="Science City"
-                {...register("venue", {
-                  required: "Venue is required.",
-                })}
-                className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-slate-900"
-              />
-
-              {errors.venue && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.venue.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Category
-              </label>
-
-              <select
-                {...register("category", {
-                  required: "Category is required.",
-                })}
-                className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-slate-900"
-              >
-                <option value="">Select category</option>
-                <option value="Technology">Technology</option>
-                <option value="Music">Music</option>
-                <option value="Workshop">Workshop</option>
-                <option value="Art">Art</option>
-                <option value="Festival">Festival</option>
-              </select>
-
-              {errors.category && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.category.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Ticket Price
-              </label>
-
-              <input
-                type="number"
-                placeholder="499"
-                {...register("price", {
-                  required: "Ticket price is required.",
-                  min: {
-                    value: 0,
-                    message: "Price cannot be negative.",
-                  },
-                })}
-                className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-slate-900"
-              />
-
-              {errors.price && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.price.message}
-                </p>
-              )}
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700">
-                Description
-              </label>
-
-              <textarea
-                rows="5"
-                placeholder="Describe your event..."
-                {...register("description", {
-                  required: "Description is required.",
-                })}
-                className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-slate-900"
-              />
-
-              {errors.description && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.description.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="mt-8 w-full rounded-lg bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-700"
-          >
-            Create Event
-          </button>
-        </form>
-      </section>
-    </div>
-  );
+  return <div className="min-h-screen bg-slate-50"><section className="border-b bg-white"><div className="mx-auto max-w-3xl px-6 py-10"><p className="text-sm font-semibold uppercase text-slate-500">Organizer</p><h1 className="mt-2 text-4xl font-bold">Create Event</h1><p className="mt-3 text-slate-600">Your event starts as a draft. Add a ticket tier now, then publish it from the API/admin workflow.</p></div></section>
+    <form onSubmit={handleSubmit(onSubmit)} className="mx-auto my-10 max-w-3xl rounded-xl border bg-white p-8 shadow-sm"><div className="grid gap-6 md:grid-cols-2">
+      <label className="md:col-span-2">Event title<input {...register("title", { required: "Event title is required." })} className="mt-2 w-full rounded-lg border p-3" />{errors.title && <small className="text-red-600">{errors.title.message}</small>}</label>
+      <label>Date<input type="date" {...register("date", { required: true })} className="mt-2 w-full rounded-lg border p-3" /></label><label>Time<input type="time" {...register("time", { required: true })} className="mt-2 w-full rounded-lg border p-3" /></label>
+      <label>Category<select {...register("category", { required: true })} className="mt-2 w-full rounded-lg border p-3"><option value="">Select a category</option><option>Technology</option><option>Music</option><option>Workshop</option><option>Art</option><option>Festival</option></select></label>
+      <label>Venue<select disabled={newVenue} {...register("venueId")} className="mt-2 w-full rounded-lg border p-3"><option value="">No reserved seating / venue TBA</option>{venues.map((venue) => <option key={venue.id} value={venue.id}>{venue.name} — {venue.city}</option>)}</select></label>
+      <label className="md:col-span-2 flex items-center gap-2"><input type="checkbox" checked={newVenue} onChange={(e) => setNewVenue(e.target.checked)} /> Create a new venue for this event</label>
+      {newVenue && <><label>Venue name<input {...register("venueName", { required: newVenue })} className="mt-2 w-full rounded-lg border p-3" /></label><label>City<input {...register("venueCity", { required: newVenue })} className="mt-2 w-full rounded-lg border p-3" /></label><label className="md:col-span-2">Address<input {...register("venueAddress", { required: newVenue })} className="mt-2 w-full rounded-lg border p-3" /></label><label>Capacity<input type="number" min="1" {...register("venueCapacity", { required: newVenue, min: 1 })} className="mt-2 w-full rounded-lg border p-3" /></label><label>Reserved seats (optional)<input type="number" min="0" {...register("seatCount", { min: 0 })} className="mt-2 w-full rounded-lg border p-3" /></label><input type="hidden" {...register("venueCountry")} /></>}
+      <label>Ticket tier name<input defaultValue="General Admission" {...register("tierName", { required: true })} className="mt-2 w-full rounded-lg border p-3" /></label><label>Ticket price<input type="number" min="0" step="0.01" {...register("price", { required: true, min: 0 })} className="mt-2 w-full rounded-lg border p-3" /></label><label>Tickets available<input type="number" min="1" {...register("quantity", { required: true, min: 1 })} className="mt-2 w-full rounded-lg border p-3" /></label>
+      <label className="md:col-span-2">Description<textarea rows="5" {...register("description", { required: true })} className="mt-2 w-full rounded-lg border p-3" /></label>
+    </div><button disabled={isSubmitting} className="mt-8 w-full rounded-lg bg-slate-900 px-5 py-3 font-medium text-white disabled:opacity-50">{isSubmitting ? "Creating…" : "Create event"}</button></form></div>;
 }
-
 export default CreateEvent;

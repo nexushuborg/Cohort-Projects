@@ -19,7 +19,7 @@ router.get('/me', authenticate, async (req, res) => {
     );
     res.json(
         { 
-            status: 'failed',
+            status: 'success',
              data: { items: result.rows } 
          });
   } catch (err) {
@@ -95,7 +95,7 @@ router.post('/check-in', authenticate, authorize('organizer', 'admin'), async (r
     }
 
     const result = await db.query(
-      ticketId ? `SELECT * FROM tickets WHERE id = $1` : `SELECT * FROM tickets WHERE qr_code = $1`,
+      ticketId ? `SELECT t.*, e.organizer_id FROM tickets t JOIN booking_items bi ON bi.id=t.booking_item_id JOIN bookings b ON b.id=bi.booking_id JOIN events e ON e.id=b.event_id WHERE t.id = $1` : `SELECT t.*, e.organizer_id FROM tickets t JOIN booking_items bi ON bi.id=t.booking_item_id JOIN bookings b ON b.id=bi.booking_id JOIN events e ON e.id=b.event_id WHERE t.qr_code = $1`,
       [ticketId || qrCode]
     );
     if (result.rows.length === 0) {
@@ -109,6 +109,7 @@ router.post('/check-in', authenticate, authorize('organizer', 'admin'), async (r
         });
     }
     const ticket = result.rows[0];
+    if (req.user.role !== 'admin' && ticket.organizer_id !== req.user.sub) return res.status(403).json({ status: 'failed', error: { code: 'FORBIDDEN', message: 'Not your event ticket' } });
 
     if (ticket.status === 'used') {
       return res.status(409).json(
@@ -138,7 +139,7 @@ router.post('/check-in', authenticate, authorize('organizer', 'admin'), async (r
 
     res.json(
         { 
-            status: 'failed', 
+            status: 'success',
             data: updated.rows[0] 
         });
   } catch (err) {

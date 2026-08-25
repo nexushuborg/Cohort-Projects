@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { loginUser } from "../api/authApi";
@@ -11,25 +12,24 @@ function Login() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm();
 
+  const [serverError, setServerError] = useState("");
+
   const onSubmit = async (data) => {
+    setServerError("");
     try {
       const response = await loginUser(data);
 
-      console.log("Login successful:", response);
-
       const { user, accessToken, refreshToken } = response.data;
 
-      // Save authentication data in Zustand + localStorage
       login({
         user,
         accessToken,
         refreshToken,
       });
 
-      // Redirect according to the role returned by the backend
       if (user.role === "admin") {
         navigate("/admin-dashboard");
       } else if (user.role === "organizer") {
@@ -38,13 +38,10 @@ function Login() {
         navigate("/");
       }
     } catch (error) {
-      console.error("Login failed:", error);
-
-      const message =
+      setServerError(
         error.response?.data?.error?.message ||
-        "Login failed. Please check your email and password.";
-
-      alert(message);
+        "Login failed. Please check your email and password."
+      );
     }
   };
 
@@ -131,10 +128,15 @@ function Login() {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-700"
+              disabled={isSubmitting}
+              className="w-full rounded-lg bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
             >
-              Login
+              {isSubmitting ? "Logging in…" : "Login"}
             </button>
+
+            {serverError && (
+              <p className="mt-2 text-sm text-red-600">{serverError}</p>
+            )}
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-600">

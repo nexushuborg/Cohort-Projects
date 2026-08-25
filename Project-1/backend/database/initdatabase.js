@@ -13,6 +13,8 @@ const createTables = async () => {
       name VARCHAR(255) NOT NULL,
       role VARCHAR(20) NOT NULL DEFAULT 'attendee',
       phone VARCHAR(20),
+      password_reset_token VARCHAR(255),
+      password_reset_expires_at TIMESTAMP,
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
     );
@@ -152,6 +154,9 @@ const createTables = async () => {
 
   try {
     await db.query(queryText);
+    // Safe for databases created before password reset support was added.
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires_at TIMESTAMP`);
     console.log('Database tables successfully synchronized.');
   } catch (err) {
     console.error('Error creating database tables:', err);

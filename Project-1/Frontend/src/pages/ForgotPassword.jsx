@@ -1,5 +1,11 @@
+import { useState } from "react";
+import { requestPasswordReset, resetPassword } from "../api/authApi";
+
 function ForgotPassword() {
-  return <h1>Forgot Password Page</h1>
+  const [email, setEmail] = useState(""); const [token, setToken] = useState(""); const [password, setPassword] = useState(""); const [message, setMessage] = useState(""); const [generatedToken, setGeneratedToken] = useState("");
+  const request = async (event) => { event.preventDefault(); try { const response = await requestPasswordReset(email); setGeneratedToken(response.data.resetToken || ""); setMessage(response.data.message); } catch (error) { setMessage(error.response?.data?.error?.message || "Could not start password reset."); } };
+  const reset = async (event) => { event.preventDefault(); try { const response = await resetPassword(token, password); setMessage(response.data.message); setPassword(""); } catch (error) { setMessage(error.response?.data?.error?.message || "Could not reset password."); } };
+  return <main className="min-h-screen bg-slate-50 px-6 py-12"><div className="mx-auto max-w-md rounded-xl border bg-white p-8 shadow-sm"><h1 className="text-3xl font-bold">Reset password</h1><p className="mt-2 text-sm text-slate-600">For this demo, the reset token is shown after requesting it. In production it is sent by email.</p><form onSubmit={request} className="mt-6 space-y-3"><input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" className="w-full rounded-lg border p-3"/><button className="w-full rounded-lg bg-slate-900 p-3 text-white">Request reset token</button></form>{generatedToken && <p className="mt-4 break-all rounded bg-amber-50 p-3 text-sm">Demo reset token: <strong>{generatedToken}</strong></p>}<form onSubmit={reset} className="mt-6 space-y-3 border-t pt-6"><input required value={token} onChange={(e) => setToken(e.target.value)} placeholder="Reset token" className="w-full rounded-lg border p-3"/><input required minLength="6" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="New password (6+ characters)" className="w-full rounded-lg border p-3"/><button className="w-full rounded-lg bg-slate-900 p-3 text-white">Set new password</button></form>{message && <p className="mt-4 text-sm text-slate-700">{message}</p>}</div></main>;
 }
 
 export default ForgotPassword

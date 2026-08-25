@@ -17,8 +17,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Boot Database
-createTables();
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } });
+});
 
 // Register Routes
 app.use('/auth', authRoutes);
@@ -31,6 +34,12 @@ app.use('/reviews', reviewRoutes);
 app.use('/analytics', analyticsRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+
+createTables().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+}).catch((err) => {
+  console.error('Failed to initialize database:', err);
+  process.exit(1);
 });

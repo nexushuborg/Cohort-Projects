@@ -24,6 +24,12 @@ router.post('/hold-seat', authenticate, async (req, res) => {
       [seatId]
     );
     if (activeHold.rows.length > 0) {
+      if (activeHold.rows[0].user_id === req.user.sub) {
+        return res.status(201).json({ 
+          status: "Success",
+          data: activeHold.rows[0] 
+        });
+      }
       return res.status(409).json(
         { 
             status : "failed",
@@ -46,7 +52,7 @@ router.post('/hold-seat', authenticate, async (req, res) => {
 
     const hold = await db.query(
       `INSERT INTO seat_holds (seat_id, user_id, expires_at)
-       VALUES ($1, $2, NOW() + INTERVAL '${HOLD_MINUTES} minutes')
+       VALUES ($1, $2, NOW() + INTERVAL '10 minutes')
        RETURNING *`,
       [seatId, req.user.sub]
     );
@@ -130,6 +136,14 @@ router.post('/', authenticate, authorize('attendee', 'admin'), async (req, res) 
                 message: 'seatIds length must match quantity' 
             } 
         });
+    }
+    if (seatIds?.length && new Set(seatIds).size !== seatIds.length) return res.status(400).json({ status: 'failed', error: { code: 'VALIDATION_ERROR', message: 'Seats must be unique' } });
+
+    if (seatIds?.length) {
+      const seats = await db.query(`SELECT id FROM venue_seats WHERE venue_id = $1 AND id = ANY($2::uuid[])`, [eventRes.rows[0].venue_id, seatIds]);
+      if (!eventRes.rows[0].venue_id || seats.rows.length !== seatIds.length) return res.status(400).json({ status: 'failed', error: { code: 'VALIDATION_ERROR', message: 'Selected seats do not belong to this event venue' } });
+      const holds = await db.query(`SELECT seat_id FROM seat_holds WHERE user_id = $1 AND seat_id = ANY($2::uuid[]) AND expires_at > NOW()`, [req.user.sub, seatIds]);
+      if (holds.rows.length !== seatIds.length) return res.status(409).json({ status: 'failed', error: { code: 'CONFLICT', message: 'Please hold all selected seats before booking' } });
     }
 
     const totalAmount = Number(tier.price) * quantity;
@@ -299,7 +313,7 @@ router.post('/:id/cancel', authenticate, async (req, res) => {
       const items = await client.query(`SELECT * FROM booking_items WHERE booking_id = $1`, [id]);
       for (const item of items.rows) {
         await client.query(
-          `UPDATE ticket_tiers SET sold_quantity = sold_quantity - $1 WHERE id = $2`,
+          `UPDATE ticket_tiers SET sold_quantity = sold_quantity - $1 WHERE id = $2 AND sold_quantity >= $1`,
           [item.quantity, item.ticket_tier_id]
         );
       }

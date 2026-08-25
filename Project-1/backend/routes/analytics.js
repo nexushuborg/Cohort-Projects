@@ -9,18 +9,20 @@ router.get('/organizer', authenticate, authorize('organizer', 'admin'), async (r
 
   try {
     const result = await db.query(
-      `SELECT
+       `SELECT
          e.id AS event_id,
          e.title,
+         e.status,
+         e.event_date,
          COUNT(DISTINCT t.id) AS tickets_sold,
-         COALESCE(SUM(p.amount), 0) AS revenue
+         COALESCE(SUM(DISTINCT p.amount), 0) AS revenue
        FROM events e
        LEFT JOIN bookings b ON b.event_id = e.id AND b.status = 'confirmed'
        LEFT JOIN payments p ON p.booking_id = b.id AND p.status = 'completed'
        LEFT JOIN booking_items bi ON bi.booking_id = b.id
        LEFT JOIN tickets t ON t.booking_item_id = bi.id AND t.status != 'cancelled'
        WHERE e.organizer_id = $1
-       GROUP BY e.id, e.title
+       GROUP BY e.id, e.title, e.status, e.event_date
        ORDER BY e.created_at DESC`,
       [req.user.sub]
 

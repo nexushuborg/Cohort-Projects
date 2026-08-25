@@ -1,57 +1,18 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const events = [
-  {
-    id: 1,
-    title: "Tech Conference 2026",
-    date: "September 15, 2026",
-    location: "Kolkata",
-    category: "Technology",
-    price: "₹499",
-  },
-  {
-    id: 2,
-    title: "Music Festival",
-    date: "September 20, 2026",
-    location: "Mumbai",
-    category: "Music",
-    price: "₹999",
-  },
-  {
-    id: 3,
-    title: "Startup Workshop",
-    date: "September 25, 2026",
-    location: "Bangalore",
-    category: "Workshop",
-    price: "₹299",
-  },
-  {
-    id: 4,
-    title: "Photography Exhibition",
-    date: "October 2, 2026",
-    location: "Delhi",
-    category: "Art",
-    price: "₹199",
-  },
-  {
-    id: 5,
-    title: "AI & Machine Learning Summit",
-    date: "October 10, 2026",
-    location: "Hyderabad",
-    category: "Technology",
-    price: "₹799",
-  },
-  {
-    id: 6,
-    title: "College Cultural Fest",
-    date: "October 18, 2026",
-    location: "Kolkata",
-    category: "Festival",
-    price: "₹149",
-  },
-];
+import { getEvents } from "../api/eventApi";
 
 function Events() {
+  const [events, setEvents] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getEvents()
+      .then((response) => setEvents(response.data.items.filter((event) => event.status === "published")))
+      .catch(() => setError("Events could not be loaded. Please try again."))
+      .finally(() => setLoading(false));
+  }, []);
   return (
     <div className="min-h-screen bg-slate-50">
 
@@ -105,11 +66,11 @@ function Events() {
                 <div className="mt-4 space-y-2 text-sm text-slate-600">
 
                   <p>
-                    📅 {event.date}
+                    📅 {new Date(event.event_date).toLocaleString()}
                   </p>
 
                   <p>
-                    📍 {event.location}
+                    📍 {event.venue_id ? "Venue selected" : "Venue to be announced"}
                   </p>
 
                 </div>
@@ -123,7 +84,7 @@ function Events() {
                     </p>
 
                     <p className="text-lg font-bold text-slate-900">
-                      {event.price}
+                      See ticket options
                     </p>
                   </div>
 
@@ -144,6 +105,14 @@ function Events() {
           ))}
 
         </div>
+
+        {error && <p className="mt-6 text-sm text-red-600">{error}</p>}
+
+        {loading && <p className="mt-6 text-slate-600">Loading events…</p>}
+
+        {!loading && !error && events.length === 0 && (
+          <p className="mt-6 text-slate-600">No published events are available yet.</p>
+        )}
 
       </section>
 

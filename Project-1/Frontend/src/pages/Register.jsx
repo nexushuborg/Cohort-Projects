@@ -1,15 +1,29 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { registerUser } from "../api/authApi";
+import useAuthStore from "../stores/authStore";
 
 function Register() {
+  const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log("Registration Data:", data);
+  const [serverError, setServerError] = useState("");
+
+  const onSubmit = async (data) => {
+    setServerError("");
+    try {
+      const response = await registerUser(data);
+      login(response.data);
+      navigate(response.data.user.role === "organizer" ? "/organizer-dashboard" : "/");
+    } catch (error) {
+      setServerError(error.response?.data?.error?.message || "Could not create your account.");
+    }
   };
 
   return (
@@ -171,10 +185,15 @@ function Register() {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-700"
+              disabled={isSubmitting}
+              className="w-full rounded-lg bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
             >
-              Create Account
+              {isSubmitting ? "Creating…" : "Create Account"}
             </button>
+
+            {serverError && (
+              <p className="mt-2 text-sm text-red-600">{serverError}</p>
+            )}
 
           </form>
 
