@@ -285,6 +285,8 @@ const deleteProperty = async (req, res) => {
 
 const uploadPropertyPhoto = async (req, res) => {
     const { id } = req.params;
+    const { caption, sort_order } = req.body;
+
     if (!req.file) {
         return res.status(400).json({
             status: "failed",
@@ -294,13 +296,13 @@ const uploadPropertyPhoto = async (req, res) => {
 
     const photoUrl = `/uploads/${req.file.filename}`;
     const insertPhotoQuery = `
-        INSERT INTO property_photos (property_id, url)
-        VALUES ($1, $2)
+        INSERT INTO property_photos (property_id, url, caption, sort_order)
+        VALUES ($1, $2, $3, $4)
         RETURNING *;
     `;
 
     try {
-        const result = await db.query(insertPhotoQuery, [id, photoUrl]);
+        const result = await db.query(insertPhotoQuery, [id, photoUrl, caption || null, sort_order || 0]);
         return res.status(201).json({
             status: "success",
             message: "Property photo uploaded successfully",

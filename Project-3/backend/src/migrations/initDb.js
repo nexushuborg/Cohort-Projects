@@ -104,6 +104,7 @@ const initDatabase = async () => {
             total_nights INTEGER NOT NULL,
             total_price DECIMAL(10,2) NOT NULL,
             status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'declined', 'completed', 'cancelled')),
+            cancellation_reason TEXT,
             created_at TIMESTAMP DEFAULT NOW(),
             updated_at TIMESTAMP DEFAULT NOW()
         );

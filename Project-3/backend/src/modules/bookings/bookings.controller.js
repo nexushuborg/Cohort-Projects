@@ -296,11 +296,11 @@ const cancelBooking = async (req, res) => {
 
         const updateCancelQuery = `
             UPDATE bookings
-            SET status = 'cancelled', updated_at = NOW()
+            SET status = 'cancelled', cancellation_reason = COALESCE($2, cancellation_reason), updated_at = NOW()
             WHERE id = $1
             RETURNING *;
         `;
-        const result = await db.query(updateCancelQuery, [id]);
+        const result = await db.query(updateCancelQuery, [id, cancellation_reason || null]);
 
         const removeBlockQuery = `
             DELETE FROM availability_blocks
