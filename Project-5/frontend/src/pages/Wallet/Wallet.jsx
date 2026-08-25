@@ -26,7 +26,9 @@ export default function Wallet() {
         walletAPI.getTransactions(),
       ]);
       if (walletRes.data.success) setWallet(walletRes.data.data);
-      if (txRes.data.success) setTransactions(txRes.data.data?.items || txRes.data.data || []);
+      if (txRes.data.success) {
+        setTransactions(txRes.data.data?.items || txRes.data.data?.transactions || []);
+      }
     } catch {
       // Not a driver yet
     } finally {
@@ -91,15 +93,15 @@ export default function Wallet() {
 
       <div className={styles.statsRow}>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>${wallet?.balance?.toFixed(2) || '0.00'}</div>
+          <div className={styles.statValue}>${Number(wallet?.balance || 0).toFixed(2)}</div>
           <div className={styles.statLabel}>Balance</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>${wallet?.totalEarned?.toFixed(2) || '0.00'}</div>
+          <div className={styles.statValue}>${Number(wallet?.totalEarned || 0).toFixed(2)}</div>
           <div className={styles.statLabel}>Total Earned</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>${wallet?.totalWithdrawn?.toFixed(2) || '0.00'}</div>
+          <div className={styles.statValue}>${Number(wallet?.totalWithdrawn || 0).toFixed(2)}</div>
           <div className={styles.statLabel}>Total Withdrawn</div>
         </div>
       </div>
@@ -156,10 +158,10 @@ export default function Wallet() {
                 </span>
               </div>
               <span
-                className={[styles.transactionAmount, tx.type === 'credit' ? styles.amountCredit : styles.amountDebit]
+                  className={[styles.transactionAmount, tx.type?.toLowerCase() === 'credit' ? styles.amountCredit : styles.amountDebit]
                   .filter(Boolean).join(' ')}
               >
-                {tx.type === 'credit' ? '+' : '-'}${tx.amount?.toFixed(2)}
+                {tx.type?.toLowerCase() === 'credit' ? '+' : '-'}${Number(tx.amount || 0).toFixed(2)}
               </span>
             </div>
           ))}
