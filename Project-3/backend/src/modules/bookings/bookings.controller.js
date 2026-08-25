@@ -322,6 +322,32 @@ const cancelBooking = async (req, res) => {
     }
 };
 
+const getAllBookings = async (req, res) => {
+    const getAllQuery = `
+        SELECT b.*, p.title as property_title, u.name as guest_name, u.email as guest_email
+        FROM bookings b
+        JOIN properties p ON b.property_id = p.id
+        JOIN users u ON b.guest_id = u.id
+        ORDER BY b.created_at DESC;
+    `;
+
+    try {
+        const result = await db.query(getAllQuery);
+
+        return res.status(200).json({
+            status: "success",
+            message: "Retrieved all bookings successfully",
+            data: result.rows
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to fetch bookings",
+            error: error
+        });
+    }
+};
+
 module.exports = {
     createBooking,
     approveBooking,
@@ -329,5 +355,7 @@ module.exports = {
     getGuestTrips,
     getHostBookings,
     getBookingById,
-    cancelBooking
+    cancelBooking,
+    getAllBookings
 };
+

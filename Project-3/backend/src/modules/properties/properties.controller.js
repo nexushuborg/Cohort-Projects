@@ -304,6 +304,40 @@ const uploadPropertyPhoto = async (req, res) => {
     }
 };
 
+const getPropertyTypes = async (req, res) => {
+    try {
+        const result = await db.query(`SELECT * FROM property_types ORDER BY name ASC;`);
+        return res.status(200).json({
+            status: "success",
+            message: "Retrieved property types successfully",
+            data: result.rows
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to fetch property types",
+            error: error
+        });
+    }
+};
+
+const getAmenities = async (req, res) => {
+    try {
+        const result = await db.query(`SELECT * FROM amenities ORDER BY name ASC;`);
+        return res.status(200).json({
+            status: "success",
+            message: "Retrieved amenities successfully",
+            data: result.rows
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to fetch amenities",
+            error: error
+        });
+    }
+};
+
 module.exports = {
     createProperty,
     getProperties,
@@ -312,5 +346,7 @@ module.exports = {
     updatePropertyStatus,
     updateProperty,
     deleteProperty,
-    uploadPropertyPhoto
-};
+    uploadPropertyPhoto,
+    getPropertyTypes,
+    getAmenities
+};
