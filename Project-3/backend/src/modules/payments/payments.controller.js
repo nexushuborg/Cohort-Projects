@@ -14,24 +14,33 @@ const processPayment = async (req, res) => {
     }
 
     try {
-        // Fetch booking to verify existence and guest ID
-        const bookingQuery = `SELECT * FROM bookings WHERE id = $1;`;
+        // Fetch booking to verify existence, host ID, and guest ID
+        const bookingQuery = `
+            SELECT b.*, p.host_id 
+            FROM bookings b
+            JOIN properties p ON b.property_id = p.id
+            WHERE b.id = $1;
+        `;
         const bookingRes = await db.query(bookingQuery, [booking_id]);
 
         if (bookingRes.rows.length === 0) {
             return res.status(404).json({
+                status: "failed",
                 success: false,
+                message: "Booking not found",
                 error: { code: "NOT_FOUND", message: "Booking not found" }
             });
         }
 
         const booking = bookingRes.rows[0];
 
-        // Ensure user paying is either the booking guest or an admin
-        if (booking.guest_id !== userId && req.user.role !== 'admin') {
+        // Ensure user paying is the booking guest, host, or an admin
+        if (booking.guest_id !== userId && booking.host_id !== userId && req.user.role !== 'admin') {
             return res.status(403).json({
+                status: "failed",
                 success: false,
-                error: { code: "FORBIDDEN", message: "Access denied. Only the booking guest can process payments." }
+                message: "Access denied. Only the booking guest or host can process payments.",
+                error: { code: "FORBIDDEN", message: "Access denied. Only the booking guest or host can process payments." }
             });
         }
 

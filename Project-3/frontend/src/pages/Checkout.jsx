@@ -67,6 +67,7 @@ function Checkout() {
 
       setError(
         err.response?.data?.message ||
+          err.response?.data?.error?.message ||
           "Payment failed. Please try again."
       );
     } finally {

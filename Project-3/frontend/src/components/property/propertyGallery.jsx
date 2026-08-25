@@ -17,22 +17,21 @@ function PropertyGallery({ photos = [], propertyTitle = "Property" }) {
     .map(getImageUrl)
     .filter((url) => url);
 
-  if (validPhotos.length === 0) {
-    return (
-      <div className="w-full">
-        <div className="flex h-[400px] items-center justify-center rounded-xl bg-gray-100">
-          <div className="text-center">
-            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-200">
-              <span className="text-2xl text-gray-500">🏠</span>
-            </div>
+  let displayPhotos = validPhotos;
 
-            <p className="text-gray-500">
-              No property images available
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+  if (displayPhotos.length === 0) {
+    const lowerTitle = (propertyTitle || "").toLowerCase();
+    let defaultImg = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80";
+    
+    if (lowerTitle.includes("penthouse") || lowerTitle.includes("apartment")) {
+      defaultImg = "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80";
+    } else if (lowerTitle.includes("cabin") || lowerTitle.includes("mountain")) {
+      defaultImg = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80";
+    } else if (lowerTitle.includes("palace") || lowerTitle.includes("heritage")) {
+      defaultImg = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80";
+    }
+
+    displayPhotos = [defaultImg];
   }
 
   return (
@@ -40,26 +39,23 @@ function PropertyGallery({ photos = [], propertyTitle = "Property" }) {
       {/* Main Image */}
       <div className="relative overflow-hidden rounded-xl bg-gray-100">
         <img
-          src={validPhotos[selectedImage]}
+          src={displayPhotos[selectedImage] || displayPhotos[0]}
           alt={`${propertyTitle} ${selectedImage + 1}`}
           className="h-[400px] w-full object-cover"
-          onError={(event) => {
-            event.currentTarget.style.display = "none";
-          }}
         />
 
         {/* Image Counter */}
-        {validPhotos.length > 1 && (
+        {displayPhotos.length > 1 && (
           <div className="absolute bottom-4 right-4 rounded-full bg-black/60 px-3 py-1 text-sm text-white">
-            {selectedImage + 1} / {validPhotos.length}
+            {selectedImage + 1} / {displayPhotos.length}
           </div>
         )}
       </div>
 
       {/* Thumbnails */}
-      {validPhotos.length > 1 && (
+      {displayPhotos.length > 1 && (
         <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-          {validPhotos.map((photo, index) => (
+          {displayPhotos.map((photo, index) => (
             <button
               key={`${photo}-${index}`}
               type="button"
