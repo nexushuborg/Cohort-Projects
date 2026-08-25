@@ -1,87 +1,73 @@
 import { useEffect, useState } from "react";
-import { getProperties } from "../api/propertyApi";
+import axios from "axios";
 import PropertyGrid from "../components/property/PropertyGrid";
+import PropertyFilters from "../components/property/PropertyFilters";
 
 function Search() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const loadProperties = async () => {
-      try {
-        setLoading(true);
+  const fetchProperties = (filters = {}) => {
+    setLoading(true);
+    setError("");
 
-        const response = await getProperties();
-
-        setProperties(response.data || []);
-      } catch (err) {
-        console.error("Failed to load properties:", err);
-
-        setError(
-          err.response?.data?.message ||
-            "Unable to load properties."
-        );
-      } finally {
+    axios
+      .get("http://localhost:5000/api/search", { params: filters })
+      .then((response) => {
+        const items = response.data.data?.items || response.data.data || response.data || [];
+        setProperties(Array.isArray(items) ? items : []);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Unable to load properties.");
+      })
+      .finally(() => {
         setLoading(false);
-      }
-    };
+      });
+  };
 
-    loadProperties();
+  useEffect(() => {
+    fetchProperties();
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <section className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-10">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Find your perfect stay
-          </h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="border-b border-gray-200 bg-white py-8 px-6">
+        <div className="mx-auto max-w-7xl">
+          <h1 className="text-3xl font-bold text-gray-900">Find your perfect stay</h1>
+          <p className="mt-2 text-gray-500">Browse available properties on RentalHub</p>
 
-          <p className="mt-2 text-gray-500">
-            Browse available properties on RentalHub
-          </p>
-        </div>
-      </section>
-
-      {/* Properties */}
-      <section className="mx-auto max-w-7xl px-6 py-10">
-
-        {loading && (
-          <div className="py-20 text-center">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-rose-500" />
-
-            <p className="mt-4 text-sm text-gray-500">
-              Loading properties...
-            </p>
+          <div className="mt-6">
+            <PropertyFilters
+              onApplyFilters={(filters) => fetchProperties(filters)}
+              onResetFilters={() => fetchProperties()}
+            />
           </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-6 py-10">
+        {loading && (
+          <p className="text-center text-gray-500 font-medium py-10">Loading properties...</p>
         )}
 
-        {!loading && error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-center text-red-600">
+        {error && (
+          <div className="p-4 rounded-lg bg-red-50 text-red-600 text-center border border-red-200">
             {error}
           </div>
         )}
 
         {!loading && !error && (
-          <>
-            <div className="mb-6">
-              <p className="text-sm text-gray-500">
-                {properties.length}{" "}
-                {properties.length === 1
-                  ? "property"
-                  : "properties"}{" "}
-                available
-              </p>
-            </div>
-
+          <div>
+            <p className="mb-6 text-sm font-medium text-gray-500">
+              {properties.length} {properties.length === 1 ? "property" : "properties"} available
+            </p>
             <PropertyGrid properties={properties} />
-          </>
+          </div>
         )}
-
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
 

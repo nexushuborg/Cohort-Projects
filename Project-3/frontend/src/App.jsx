@@ -4,15 +4,17 @@ import Navbar from "./components/common/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Search from "./pages/Search";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import PropertyDetails from "./pages/PropertyDetails";
 import Booking from "./pages/Booking";
 import MyTrips from "./pages/MyTrips";
-import Checkout from "./pages/Checkout";
-import GuestDashboard from "./pages/GuestDashboard";
+import Profile from "./pages/Profile";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
+import HostDashboard from "./pages/host/HostDashboard";
 import MyListings from "./pages/host/MyListings";
 import CreateListing from "./pages/host/CreateListing";
-import HostDashboard from "./pages/host/HostDashboard";
+
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import Users from "./pages/admin/Users";
 import Properties from "./pages/admin/Properties";
 import Bookings from "./pages/admin/Bookings";
@@ -22,69 +24,58 @@ const router = createBrowserRouter([
     path: "/",
     element: <Navbar />,
     children: [
+      { index: true, element: <Search /> },
+      { path: "search", 
+        element: <Search />
+       },
+      { path: "properties/:id", 
+        element: <PropertyDetails />
+       },
+      { path: "login",
+         element: <Login /> },
+      { path: "register",
+         element: <Register /> },
+
       {
-        index: true,
-        element: <Search />,
+        element: <ProtectedRoute allowedRoles={["guest", "host", "admin"]} />,
+        children: [
+          { path: "properties/:id/book", 
+            element: <Booking /> },
+          { path: "trips",
+             element: <MyTrips /> },
+          { path: "dashboard",
+             element: <MyTrips /> },
+          { path: "profile",
+             element: <Profile /> },
+        ],
       },
+
       {
-        path: "search",
-        element: <Search />,
+        element: <ProtectedRoute allowedRoles={["host", "admin"]} />,
+        children: [
+          { path: "host", 
+            element: <HostDashboard /> },
+          { path: "host/dashboard", 
+            element: <HostDashboard /> },
+          { path: "host/listings",
+             element: <MyListings /> },
+          { path: "host/create-listing",
+             element: <CreateListing /> },
+        ],
       },
+
       {
-        path: "properties/:id",
-        element: <PropertyDetails />,
-      },
-      {
-        path: "properties/:id/book",
-        element: <Booking />,
-      },
-      {
-        path: "trips",
-        element: <MyTrips />,
-      },
-      {
-        path: "checkout",
-        element: <Checkout />,
-      },
-      {
-        path: "login",
-        element: <Login />,
-      },
-      {
-        path: "register",
-        element: <Register />,
-      },
-      {
-        path: "dashboard",
-        element: <GuestDashboard />,
-      },
-      {
-        path: "admin",
-        element: <AdminDashboard />,
-      },
-      {
-      path: "admin/users",
-      element: <Users />,
-      },
-      {
-        path: "admin/properties",
-        element: <Properties />,
-      },
-      {
-        path: "admin/bookings",
-        element: <Bookings />,
-      },
-      {
-        path: "host/listings",
-        element: <MyListings />,
-      },
-      {
-        path: "host/create-listing",
-        element: <CreateListing />,
-      },
-      {
-        path: "host/dashboard",
-        element: <HostDashboard />,
+        element: <ProtectedRoute allowedRoles={["admin"]} />,
+        children: [
+          { path: "admin", 
+            element: <AdminDashboard /> },
+          { path: "admin/users",
+             element: <Users /> },
+          { path: "admin/properties", 
+            element: <Properties /> },
+          { path: "admin/bookings", 
+            element: <Bookings /> },
+        ],
       },
     ],
   },

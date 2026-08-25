@@ -6,12 +6,14 @@ const {
     getGuestTrips,
     getHostBookings,
     getBookingById,
-    cancelBooking
+    cancelBooking,
+    getAllBookings
 } = require('./bookings.controller.js');
 const { authMiddleware, rbacMiddleware } = require('../../middleware/authMiddleware.js');
 
 bookingRoute
     .post('/', authMiddleware, createBooking)
+    .get('/', authMiddleware, rbacMiddleware(['admin']), getAllBookings)
     .get('/my', authMiddleware, getGuestTrips)
     .get('/host', authMiddleware, rbacMiddleware(['host', 'admin']), getHostBookings)
     .get('/:id', authMiddleware, getBookingById)
@@ -19,4 +21,4 @@ bookingRoute
     .post('/:id/decline', authMiddleware, rbacMiddleware(['host', 'admin']), declineBooking)
     .post('/:id/cancel', authMiddleware, cancelBooking);
 
-module.exports = { bookingRoute };
+module.exports = { bookingRoute };

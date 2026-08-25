@@ -77,7 +77,30 @@ const getPublicProfile = async (req, res) => {
     }
 };
 
+const getAllUsers = async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT id, name, email, role, phone, bio, avatar_url, created_at
+            FROM users
+            ORDER BY created_at DESC;
+        `);
+        return res.status(200).json({
+            status: "success",
+            message: "Users retrieved successfully",
+            data: result.rows
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to fetch users",
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     updateProfile,
-    getPublicProfile
+    getPublicProfile,
+    getAllUsers
 };
+

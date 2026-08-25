@@ -2,6 +2,13 @@ const db = require('../../config/database.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
+const generateTokens = (user) => {
+    const payload = { id: user.id, email: user.email, role: user.role };
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, { expiresIn: '7d' });
+    return { accessToken, refreshToken, token: accessToken };
+};
+
 const createUser = async (req, res) => {
     const { name, email, password, role } = req.body;
 
@@ -33,17 +40,15 @@ const createUser = async (req, res) => {
             role || "guest"
         ]);
 
-        const token = jwt.sign(
-            { id: result.rows[0].id, email: result.rows[0].email, role: result.rows[0].role },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
+        const tokens = generateTokens(result.rows[0]);
 
         return res.status(201).json({
             status: "success",
             message: "User created successfully",
             data: result.rows[0],
-            token: token
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            token: tokens.token
         });
 
     } catch (error) {
@@ -82,11 +87,7 @@ const loginUser = async (req, res) => {
             });
         }
 
-        const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
+        const tokens = generateTokens(user);
 
         return res.status(200).json({
             status: "success",
@@ -97,7 +98,9 @@ const loginUser = async (req, res) => {
                 email: user.email,
                 role: user.role
             },
-            token: token
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            token: tokens.token
         });
 
     } catch (error) {
@@ -134,8 +137,8 @@ const getUserDetails = async (req, res) => {
 };
 
 const refreshToken = async (req, res) => {
-    const { token } = req.body;
-    if (!token) {
+    const tokenToRefresh = req.body.refreshToken || req.body.token;
+    if (!tokenToRefresh) {
         return res.status(400).json({
             status: "failed",
             message: "Refresh token is required"
@@ -143,23 +146,63 @@ const refreshToken = async (req, res) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
-        const newToken = jwt.sign(
-            { id: decoded.id, email: decoded.email, role: decoded.role },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
+        const decoded = jwt.verify(tokenToRefresh, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
+        const tokens = generateTokens(decoded);
 
         return res.status(200).json({
             status: "success",
             message: "Token refreshed successfully",
-            token: newToken
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            token: tokens.token
         });
     } catch (error) {
         return res.status(401).json({
             status: "failed",
             message: "Invalid or expired refresh token",
-            error: error
+            error: error.message
+        });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+        return res.status(400).json({
+            status: "failed",
+            message: "Email and newPassword are required"
+        });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updatePasswordQuery = `
+            UPDATE users
+            SET password_hash = $1, updated_at = NOW()
+            WHERE email = $2
+            RETURNING id, email, name, role;
+        `;
+
+        const result = await db.query(updatePasswordQuery, [hashedPassword, email]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                status: "failed",
+                message: "User with this email not found"
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Password reset successfully",
+            data: result.rows[0]
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to reset password",
+            error: error.message
         });
     }
 };
@@ -168,5 +211,7 @@ module.exports = {
     createUser,
     loginUser,
     getUserDetails,
-    refreshToken
+    refreshToken,
+    resetPassword
 };
+
