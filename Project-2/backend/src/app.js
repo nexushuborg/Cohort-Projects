@@ -21,6 +21,12 @@ const skuRoutes = require('./modules/skus/sku.routes');
 const inventoryRoutes = require('./modules/inventory/inventory.routes');
 const cartRoutes = require('./modules/cart/cart.routes');
 
+// ─── Routes - Person 3 Modules ───────────────────────────────
+const reviewRoutes = require('./modules/reviews/review.routes');
+
+// ─── Orders (Buyer Checkout) ──────────────────────────────
+const orderRoutes = require('./modules/orders/order.routes');
+
 const app = express();
 
 // ─── Security ────────────────────────────────────────────────
@@ -85,6 +91,12 @@ app.use('/products/:productId/inventory', inventoryRoutes);
 
 // ─── Cart (Buyer Only) ─────────────────────────────────────
 app.use('/cart', cartRoutes);
+
+// ─── Reviews (Person 3 Ownership) ───────────────────────────
+app.use('/reviews', reviewRoutes);
+
+// ─── Orders (Buyer Only) ──────────────────────────────────
+app.use('/orders', orderRoutes);
 
 // ─── 404 Handler & Global Error Handler ──────────────────────
 app.use(notFoundHandler);
