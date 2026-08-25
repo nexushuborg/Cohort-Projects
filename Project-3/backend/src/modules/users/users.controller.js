@@ -74,12 +74,6 @@ const getPublicProfile = async (req, res) => {
             message: "Failed to fetch user profile",
             error: error
         });
-    } catch (error) {
-        return res.status(500).json({
-            status: "failed",
-            message: "Failed to fetch user profile",
-            error: error
-        });
     }
 };
 
