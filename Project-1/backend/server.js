@@ -9,6 +9,8 @@ const eventRoutes = require('./routes/event');
 const bookingRoutes = require('./routes/booking');
 const paymentRoutes = require('./routes/payment');
 const ticketRoutes = require('./routes/ticket');
+const reviewRoutes = require('./routes/review');
+const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.use('/events', eventRoutes);
 app.use('/bookings', bookingRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/tickets', ticketRoutes);
+app.use('/reviews', reviewRoutes);
+app.use('/analytics', analyticsRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
