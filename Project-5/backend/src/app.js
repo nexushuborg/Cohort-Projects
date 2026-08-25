@@ -15,6 +15,10 @@ const searchRoutes = require('./modules/search/search.routes');
 const recentSearchesRoutes = require('./modules/search/recentSearches.routes');
 const dashboardRoutes = require('./modules/dashboards/dashboards.routes');
 
+const ratingRoutes =
+require('./modules/ratings/ratings.routes');
+const bookingRoutes = require('./modules/bookings/bookings.routes');
+
 const app = express();
 
 // Security
@@ -34,6 +38,11 @@ app.use(morgan('dev'));
 
 app.use('/drivers', driverRoutes);
 app.use('/vehicles', vehicleRoutes);
+
+
+app.use('/ratings', ratingRoutes);
+app.use('/bookings', bookingRoutes);
+
 
 // Health check
 app.get('/health', (req, res) => {
