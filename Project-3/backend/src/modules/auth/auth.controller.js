@@ -165,9 +165,53 @@ const refreshToken = async (req, res) => {
     }
 };
 
+const resetPassword = async (req, res) => {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+        return res.status(400).json({
+            status: "failed",
+            message: "Email and newPassword are required"
+        });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updatePasswordQuery = `
+            UPDATE users
+            SET password_hash = $1, updated_at = NOW()
+            WHERE email = $2
+            RETURNING id, email, name, role;
+        `;
+
+        const result = await db.query(updatePasswordQuery, [hashedPassword, email]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                status: "failed",
+                message: "User with this email not found"
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Password reset successfully",
+            data: result.rows[0]
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "failed",
+            message: "Failed to reset password",
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     createUser,
     loginUser,
     getUserDetails,
-    refreshToken
+    refreshToken,
+    resetPassword
 };
+

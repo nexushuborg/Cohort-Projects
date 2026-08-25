@@ -2,8 +2,9 @@ const db = require('../../config/database.js');
 
 const createProperty = async (req, res) => {
     const {
-        title,description,address,city,state,
-        country, price_per_night, max_guests, bedrooms,bathrooms,beds, property_type_id, amenity_ids
+        title, description, address, city, state, country, zip_code, latitude, longitude,
+        price_per_night, max_guests, bedrooms, bathrooms, beds, min_nights, max_nights,
+        cancellation_policy, property_type_id, amenity_ids
     } = req.body;
 
     const host_id = req.user.id;
@@ -12,15 +13,19 @@ const createProperty = async (req, res) => {
         const createPropertyQuery = `
             INSERT INTO properties (
                 host_id, property_type_id, title, description, address, 
-                city, state, country, price_per_night, max_guests, 
-                bedrooms, bathrooms, beds, status
+                city, state, country, zip_code, latitude, longitude,
+                price_per_night, max_guests, bedrooms, bathrooms, beds,
+                min_nights, max_nights, cancellation_policy, status
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'published')
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'published')
             RETURNING *;
         `;
 
         const result = await db.query(createPropertyQuery, [
-            host_id,  property_type_id || null, title, description, address,  city,  state || '', country, price_per_night, max_guests || 1, bedrooms || 1, bathrooms || 1, beds || 1
+            host_id, property_type_id || null, title, description, address,
+            city, state || '', country, zip_code || null, latitude || null, longitude || null,
+            price_per_night, max_guests || 1, bedrooms || 1, bathrooms || 1, beds || 1,
+            min_nights || 1, max_nights || 30, cancellation_policy || 'moderate'
         ]);
 
         const property = result.rows[0];
@@ -188,8 +193,8 @@ const updateProperty = async (req, res) => {
     const { id } = req.params;
     const host_id = req.user.id;
     const {
-        title, description, address, city, state, country,
-        price_per_night, max_guests, bedrooms, bathrooms, beds
+        title, description, address, city, state, country, zip_code, latitude, longitude,
+        price_per_night, max_guests, bedrooms, bathrooms, beds, min_nights, max_nights, cancellation_policy
     } = req.body;
 
     const updateQuery = `
@@ -200,20 +205,26 @@ const updateProperty = async (req, res) => {
             city = COALESCE($4, city),
             state = COALESCE($5, state),
             country = COALESCE($6, country),
-            price_per_night = COALESCE($7, price_per_night),
-            max_guests = COALESCE($8, max_guests),
-            bedrooms = COALESCE($9, bedrooms),
-            bathrooms = COALESCE($10, bathrooms),
-            beds = COALESCE($11, beds),
+            zip_code = COALESCE($7, zip_code),
+            latitude = COALESCE($8, latitude),
+            longitude = COALESCE($9, longitude),
+            price_per_night = COALESCE($10, price_per_night),
+            max_guests = COALESCE($11, max_guests),
+            bedrooms = COALESCE($12, bedrooms),
+            bathrooms = COALESCE($13, bathrooms),
+            beds = COALESCE($14, beds),
+            min_nights = COALESCE($15, min_nights),
+            max_nights = COALESCE($16, max_nights),
+            cancellation_policy = COALESCE($17, cancellation_policy),
             updated_at = NOW()
-        WHERE id = $12 AND host_id = $13
+        WHERE id = $18 AND host_id = $19
         RETURNING *;
     `;
 
     try {
         const result = await db.query(updateQuery, [
-            title, description, address, city, state, country,
-            price_per_night, max_guests, bedrooms, bathrooms, beds,
+            title, description, address, city, state, country, zip_code, latitude, longitude,
+            price_per_night, max_guests, bedrooms, bathrooms, beds, min_nights, max_nights, cancellation_policy,
             id, host_id
         ]);
 
