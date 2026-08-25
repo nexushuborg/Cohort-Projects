@@ -47,44 +47,84 @@ export default function Login() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Welcome back</h1>
-        <p className={styles.subtitle}>Sign in to your account</p>
+    <div className={styles.page}>
+      {/* Branding Panel */}
+      <div className={styles.brandPanel}>
+        <div className={styles.brandContent}>
+          <div className={styles.brandLogo}>
+            <span className={styles.brandIcon}>◆</span>
+            Freebuff
+          </div>
+          <h1 className={styles.brandTitle}>
+            Your ride, your&nbsp;way.
+          </h1>
+          <p className={styles.brandSubtitle}>
+            Connect with drivers going your direction. Affordable, convenient, and community-powered.
+          </p>
+          <div className={styles.brandFeatures}>
+            <div className={styles.feature}>
+              <span className={styles.featureIcon}>🚗</span>
+              <span>Share rides and split costs</span>
+            </div>
+            <div className={styles.feature}>
+              <span className={styles.featureIcon}>🔒</span>
+              <span>Safe, verified drivers</span>
+            </div>
+            <div className={styles.feature}>
+              <span className={styles.featureIcon}>💰</span>
+              <span>Earn while you drive</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        {(error || authError) && (
-          <div className={styles.errorBanner}>{error || authError}</div>
-        )}
+      {/* Form Panel */}
+      <div className={styles.formPanel}>
+        <div className={styles.formCard}>
+          <div className={styles.formHeader}>
+            <h1 className={styles.title}>Welcome back</h1>
+            <p className={styles.subtitle}>Sign in to continue to Freebuff</p>
+          </div>
 
-        <form onSubmit={handleSubmit}>
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={handleChange}
-            error={fieldErrors.email}
-            required
-          />
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            placeholder="Enter your password"
-            value={form.password}
-            onChange={handleChange}
-            error={fieldErrors.password}
-            required
-          />
-          <Button type="submit" fullWidth loading={loading}>
-            Log in
-          </Button>
-        </form>
+          {(error || authError) && (
+            <div className={styles.errorBanner}>{error || authError}</div>
+          )}
 
-        <p className={styles.footer}>
-          Don't have an account? <Link to="/register">Sign up</Link>
-        </p>
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={handleChange}
+              error={fieldErrors.email}
+              required
+            />
+            <Input
+              label="Password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              value={form.password}
+              onChange={handleChange}
+              error={fieldErrors.password}
+              required
+            />
+            <Button type="submit" fullWidth loading={loading} size="lg">
+              Log in
+            </Button>
+          </form>
+
+          <div className={styles.divider}>
+            <span>or</span>
+          </div>
+
+          <p className={styles.footer}>
+            Don't have an account?{' '}
+            <Link to="/register" className={styles.footerLink}>Sign up</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

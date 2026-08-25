@@ -3,18 +3,26 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
+  padding: 11px var(--space-6);
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   border-radius: var(--radius-md);
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
   cursor: pointer;
-  border: none;
+  border: 1px solid transparent;
   line-height: 1.4;
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.btn:active {
+.btn:active:not(:disabled) {
   transform: scale(0.98);
 }
 
@@ -24,56 +32,57 @@
   transform: none;
 }
 
-/* Primary: Black background, white text */
+/* Primary: Black bg, white text — the signature Uber CTA */
 .btnPrimary {
-  composes: btn;
-  background-color: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
 }
 
 .btnPrimary:hover:not(:disabled) {
-  background-color: #222222;
+  background-color: #1a1a1a;
+  box-shadow: var(--shadow-md);
 }
 
-/* Secondary: White background, black text */
+/* Secondary: White bg, black text, border */
 .btnSecondary {
-  composes: btn;
-  background-color: var(--btn-secondary-bg);
-  color: var(--btn-secondary-text);
-  border: 1px solid var(--color-border);
+  background-color: var(--bg-primary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
 }
 
 .btnSecondary:hover:not(:disabled) {
   background-color: var(--bg-surface);
+  border-color: var(--color-gray-300);
 }
 
 /* Danger */
 .btnDanger {
-  composes: btn;
   background-color: var(--color-danger);
   color: var(--color-white);
+  border-color: var(--color-danger);
 }
 
 .btnDanger:hover:not(:disabled) {
-  background-color: #C41500;
+  background-color: var(--color-danger-dark);
 }
 
 /* Success */
 .btnSuccess {
-  composes: btn;
   background-color: var(--color-success);
   color: var(--color-white);
+  border-color: var(--color-success);
 }
 
 .btnSuccess:hover:not(:disabled) {
-  background-color: #05A857;
+  background-color: var(--color-success-dark);
 }
 
 /* Ghost */
 .btnGhost {
-  composes: btn;
   background: transparent;
   color: var(--color-text-secondary);
+  border-color: transparent;
 }
 
 .btnGhost:hover:not(:disabled) {
@@ -81,7 +90,26 @@
   color: var(--color-text-primary);
 }
 
+/* Outline */
+.btnOutline {
+  background: transparent;
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+.btnOutline:hover:not(:disabled) {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
 /* Sizes */
+.btnXs {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-xs);
+  border-radius: var(--radius-sm);
+}
+
 .btnSm {
   padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-sm);
@@ -90,9 +118,49 @@
 .btnLg {
   padding: var(--space-4) var(--space-8);
   font-size: var(--font-size-md);
+  border-radius: var(--radius-lg);
+}
+
+.btnXl {
+  padding: var(--space-5) var(--space-10);
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-bold);
 }
 
 /* Full width */
 .btnFull {
   width: 100%;
+}
+
+/* Icon */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.1em;
+}
+
+/* Loading spinner */
+.spinnerWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  opacity: 0.7;
+}
+
+.loadingText {
+  opacity: 0.7;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

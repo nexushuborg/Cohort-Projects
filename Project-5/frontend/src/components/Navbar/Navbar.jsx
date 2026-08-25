@@ -20,189 +20,195 @@ export default function Navbar() {
   const navLinkClass = ({ isActive }) =>
     [styles.navLink, isActive ? styles.navLinkActive : ''].filter(Boolean).join(' ');
 
+  const closeMobile = () => setMobileOpen(false);
+
   return (
     <nav className={styles.navbar}>
       <div className={styles.navbarInner}>
-        <Link to="/" className={styles.logo}>
-          RideShare
-          <span className={styles.logoDot} />
+        {/* Logo */}
+        <Link to="/" className={styles.logo} onClick={closeMobile}>
+          <span className={styles.logoIcon}>◆</span>
+          <span className={styles.logoText}>Freebuff</span>
         </Link>
 
-        {/* Desktop nav links */}
-        <div className={styles.navLinks}>
+        {/* Desktop nav */}
+        <div className={styles.navCenter}>
           {isAuthenticated && (
             <>
-              <div className={styles.modeToggle}>
-                {['rider', 'driver'].map((m) => (
-                  <button
-                    key={m}
-                    className={[styles.modeBtn, mode === m ? styles.modeBtnActive : '']
-                      .filter(Boolean)
-                      .join(' ')}
-                    onClick={() => setMode(m)}
-                  >
-                    {m.charAt(0).toUpperCase() + m.slice(1)}
-                  </button>
-                ))}
+              {/* Mode switcher — Uber-style pill toggle */}
+              <div className={styles.modeSwitcher}>
+                <button
+                  className={[styles.modeBtn, mode === 'rider' ? styles.modeBtnActive : '']
+                    .filter(Boolean).join(' ')}
+                  onClick={() => setMode('rider')}
+                >
+                  <span className={styles.modeIcon}>🚶</span>
+                  Rider
+                </button>
+                <button
+                  className={[styles.modeBtn, mode === 'driver' ? styles.modeBtnActive : '']
+                    .filter(Boolean).join(' ')}
+                  onClick={() => setMode('driver')}
+                >
+                  <span className={styles.modeIcon}>🚗</span>
+                  Driver
+                </button>
               </div>
 
-              <NavLink to="/" className={navLinkClass} end onClick={() => setMobileOpen(false)}>
-                Home
-              </NavLink>
+              <div className={styles.navDivider} />
 
-              {mode === 'rider' && (
-                <>
-                  <NavLink to="/search" className={navLinkClass} onClick={() => setMobileOpen(false)}>
-                    Search Rides
-                  </NavLink>
-                  <NavLink to="/bookings" className={navLinkClass} onClick={() => setMobileOpen(false)}>
-                    My Bookings
-                  </NavLink>
-                  <NavLink to="/dashboard/rider" className={navLinkClass} onClick={() => setMobileOpen(false)}>
-                    Dashboard
-                  </NavLink>
-                </>
-              )}
+              {/* Navigation links */}
+              <div className={styles.navLinks}>
+                <NavLink to="/" className={navLinkClass} end onClick={closeMobile}>
+                  Home
+                </NavLink>
 
-              {mode === 'driver' && (
-                <>
-                  <NavLink to="/post-ride" className={navLinkClass} onClick={() => setMobileOpen(false)}>
-                    Post Ride
-                  </NavLink>
-                  <NavLink to="/driver/trips" className={navLinkClass} onClick={() => setMobileOpen(false)}>
-                    My Trips
-                  </NavLink>
-                  <NavLink to="/dashboard/driver" className={navLinkClass} onClick={() => setMobileOpen(false)}>
-                    Dashboard
-                  </NavLink>
-                </>
-              )}
+                {mode === 'rider' && (
+                  <>
+                    <NavLink to="/search" className={navLinkClass} onClick={closeMobile}>
+                      Search
+                    </NavLink>
+                    <NavLink to="/bookings" className={navLinkClass} onClick={closeMobile}>
+                      Bookings
+                    </NavLink>
+                    <NavLink to="/dashboard/rider" className={navLinkClass} onClick={closeMobile}>
+                      Dashboard
+                    </NavLink>
+                  </>
+                )}
 
-              <NavLink to="/wallet" className={navLinkClass} onClick={() => setMobileOpen(false)}>
-                Wallet
-              </NavLink>
+                {mode === 'driver' && (
+                  <>
+                    <NavLink to="/post-ride" className={navLinkClass} onClick={closeMobile}>
+                      Post Ride
+                    </NavLink>
+                    <NavLink to="/driver/trips" className={navLinkClass} onClick={closeMobile}>
+                      My Trips
+                    </NavLink>
+                    <NavLink to="/dashboard/driver" className={navLinkClass} onClick={closeMobile}>
+                      Dashboard
+                    </NavLink>
+                  </>
+                )}
+
+                <NavLink to="/wallet" className={navLinkClass} onClick={closeMobile}>
+                  Wallet
+                </NavLink>
+              </div>
             </>
           )}
         </div>
 
-        {/* Right side: auth buttons or user menu */}
-        <div className={styles.authButtons}>
+        {/* Right side */}
+        <div className={styles.navRight}>
           {isAuthenticated ? (
-            <div className={styles.userMenu}>
-              <span className={styles.userName}>{user?.name?.split(' ')[0]}</span>
-              <div
-                className={styles.userAvatar}
-                title={user?.name}
-              >
-                {user?.name?.charAt(0)?.toUpperCase() || '?'}
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                Logout
+            <div className={styles.userSection}>
+              <NavLink to="/profile" className={styles.avatarLink} title={user?.name}>
+                <div className={styles.userAvatar}>
+                  {user?.name?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+              </NavLink>
+              <Button variant="ghost" size="xs" onClick={handleLogout}>
+                Log out
               </Button>
             </div>
           ) : (
-            <>
+            <div className={styles.authBtns}>
               <NavLink to="/login">
-                <Button variant="ghost" size="sm">
-                  Log in
-                </Button>
+                <Button variant="ghost" size="sm">Log in</Button>
               </NavLink>
               <NavLink to="/register">
-                <Button variant="primary" size="sm">
-                  Sign up
-                </Button>
+                <Button variant="primary" size="sm">Sign up</Button>
               </NavLink>
-            </>
+            </div>
           )}
-        </div>
 
-        {/* Mobile hamburger */}
-        <button
-          className={styles.hamburger}
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? '✕' : '☰'}
-        </button>
+          {/* Mobile hamburger */}
+          <button
+            className={styles.hamburger}
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={[styles.hamburgerLine, mobileOpen ? styles.open : ''].filter(Boolean).join(' ')} />
+            <span className={[styles.hamburgerLine, mobileOpen ? styles.open : ''].filter(Boolean).join(' ')} />
+          </button>
+        </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile drawer */}
       {mobileOpen && (
-        <div className={styles.mobileMenu}>
-          {isAuthenticated && (
-            <div className={styles.modeToggle}>
+        <div className={styles.mobileOverlay} onClick={closeMobile}>
+          <div className={styles.mobileDrawer} onClick={(e) => e.stopPropagation()}>
+            {/* Mobile mode switcher */}
+            <div className={styles.mobileModeToggle}>
               {['rider', 'driver'].map((m) => (
                 <button
                   key={m}
-                  className={[styles.modeBtn, mode === m ? styles.modeBtnActive : '']
-                    .filter(Boolean)
-                    .join(' ')}
-                  onClick={() => {
-                    setMode(m);
-                    setMobileOpen(false);
-                  }}
+                  className={[styles.mobileModeBtn, mode === m ? styles.mobileModeBtnActive : '']
+                    .filter(Boolean).join(' ')}
+                  onClick={() => { setMode(m); closeMobile(); }}
                 >
-                  {m.charAt(0).toUpperCase() + m.slice(1)}
+                  {m === 'rider' ? '🚶' : '🚗'} {m.charAt(0).toUpperCase() + m.slice(1)}
                 </button>
               ))}
             </div>
-          )}
 
-          {isAuthenticated ? (
-            <>
-              <NavLink to="/" className={styles.navLink} onClick={() => setMobileOpen(false)} end>
+            {/* Mobile nav links */}
+            <div className={styles.mobileNavLinks}>
+              <NavLink to="/" className={styles.mobileNavLink} onClick={closeMobile} end>
                 Home
               </NavLink>
               {mode === 'rider' && (
                 <>
-                  <NavLink to="/search" className={styles.navLink} onClick={() => setMobileOpen(false)}>
+                  <NavLink to="/search" className={styles.mobileNavLink} onClick={closeMobile}>
                     Search Rides
                   </NavLink>
-                  <NavLink to="/bookings" className={styles.navLink} onClick={() => setMobileOpen(false)}>
+                  <NavLink to="/bookings" className={styles.mobileNavLink} onClick={closeMobile}>
                     My Bookings
                   </NavLink>
-                  <NavLink to="/dashboard/rider" className={styles.navLink} onClick={() => setMobileOpen(false)}>
+                  <NavLink to="/dashboard/rider" className={styles.mobileNavLink} onClick={closeMobile}>
                     Dashboard
                   </NavLink>
                 </>
               )}
               {mode === 'driver' && (
                 <>
-                  <NavLink to="/post-ride" className={styles.navLink} onClick={() => setMobileOpen(false)}>
+                  <NavLink to="/post-ride" className={styles.mobileNavLink} onClick={closeMobile}>
                     Post Ride
                   </NavLink>
-                  <NavLink to="/driver/trips" className={styles.navLink} onClick={() => setMobileOpen(false)}>
+                  <NavLink to="/driver/trips" className={styles.mobileNavLink} onClick={closeMobile}>
                     My Trips
                   </NavLink>
-                  <NavLink to="/dashboard/driver" className={styles.navLink} onClick={() => setMobileOpen(false)}>
+                  <NavLink to="/dashboard/driver" className={styles.mobileNavLink} onClick={closeMobile}>
                     Dashboard
                   </NavLink>
                 </>
               )}
-              <NavLink to="/wallet" className={styles.navLink} onClick={() => setMobileOpen(false)}>
+              <NavLink to="/wallet" className={styles.mobileNavLink} onClick={closeMobile}>
                 Wallet
               </NavLink>
-              <NavLink to="/profile" className={styles.navLink} onClick={() => setMobileOpen(false)}>
+              <NavLink to="/profile" className={styles.mobileNavLink} onClick={closeMobile}>
                 Profile
               </NavLink>
-              <Button variant="ghost" onClick={handleLogout}>
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <NavLink to="/login" onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" fullWidth>
-                  Log in
+            </div>
+
+            <div className={styles.mobileFooter}>
+              {isAuthenticated ? (
+                <Button variant="ghost" fullWidth onClick={handleLogout}>
+                  Log out
                 </Button>
-              </NavLink>
-              <NavLink to="/register" onClick={() => setMobileOpen(false)}>
-                <Button variant="primary" fullWidth>
-                  Sign up
-                </Button>
-              </NavLink>
-            </>
-          )}
+              ) : (
+                <>
+                  <NavLink to="/login" onClick={closeMobile}>
+                    <Button variant="secondary" fullWidth>Log in</Button>
+                  </NavLink>
+                  <NavLink to="/register" onClick={closeMobile}>
+                    <Button variant="primary" fullWidth>Sign up</Button>
+                  </NavLink>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </nav>

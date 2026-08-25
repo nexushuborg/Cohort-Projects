@@ -1,14 +1,21 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { rideAPI, extractError } from '../../services/api';
-import { Input } from '../../components/Input/Input';
-import { Textarea } from '../../components/Input/Input';
+import { rideAPI, vehicleAPI, extractError } from '../../services/api';
+import { Input, Textarea } from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import MapPicker from '../../components/MapPicker/MapPicker';
+import VehicleModal from '../../components/VehicleModal/VehicleModal';
 import styles from './PostRide.module.css';
 
 export default function PostRide() {
   const navigate = useNavigate();
+
+  // — Vehicle state —
+  const [vehicleLoading, setVehicleLoading] = useState(true);
+  const [activeVehicle, setActiveVehicle] = useState(null);
+  const [showVehicleModal, setShowVehicleModal] = useState(false);
+
+  // — Ride form state —
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -31,6 +38,47 @@ export default function PostRide() {
   const [destLat, setDestLat] = useState(18.5204);
   const [destLng, setDestLng] = useState(73.8567);
 
+  // — Fetch active vehicle on mount —
+  useEffect(() => {
+    fetchVehicle();
+  }, []);
+
+  const fetchVehicle = async () => {
+    setVehicleLoading(true);
+    try {
+      const { data } = await vehicleAPI.getMine();
+      if (data.success) {
+        const vehicles = Array.isArray(data.data) ? data.data : data.data ? [data.data] : [];
+        const active = vehicles.find((v) => v.isActive === true || v.is_active === true);
+        if (active) {
+          setActiveVehicle(active);
+        } else if (vehicles.length > 0) {
+          // Has vehicles but none active — show modal to update
+          setActiveVehicle(vehicles[0]);
+          setShowVehicleModal(true);
+        } else {
+          // No vehicles at all — show modal to add one
+          setActiveVehicle(null);
+          setShowVehicleModal(true);
+        }
+      }
+    } catch {
+      // Not a driver yet or no vehicles — show modal
+      setActiveVehicle(null);
+      setShowVehicleModal(true);
+    } finally {
+      setVehicleLoading(false);
+    }
+  };
+
+  const handleVehicleSaved = (vehicle) => {
+    setActiveVehicle(vehicle);
+    setShowVehicleModal(false);
+    // Update total seats from vehicle
+    const seats = vehicle.seatCount || vehicle.seat_count || 4;
+    setForm((prev) => ({ ...prev, totalSeats: String(seats) }));
+  };
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
@@ -48,6 +96,13 @@ export default function PostRide() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Guard: must have an active vehicle
+    if (!activeVehicle) {
+      setShowVehicleModal(true);
+      return;
+    }
+
     setSaving(true);
     setError('');
     setMessage('');
@@ -82,6 +137,15 @@ export default function PostRide() {
     }
   };
 
+  // — Vehicle info display —
+  const vehicleLabel = activeVehicle
+    ? `${activeVehicle.year || ''} ${activeVehicle.make || ''} ${activeVehicle.model || ''} · ${activeVehicle.color || ''} · ${activeVehicle.licensePlate || activeVehicle.license_plate || ''}`
+    : '';
+
+  const vehicleSeats = activeVehicle
+    ? activeVehicle.seatCount || activeVehicle.seat_count
+    : null;
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -89,11 +153,51 @@ export default function PostRide() {
         <p>Share your trip with riders going your way</p>
       </div>
 
+      {/* Vehicle warning banner */}
+      {!vehicleLoading && !activeVehicle && (
+        <div className={styles.vehicleBanner}>
+          <div className={styles.vehicleBannerContent}>
+            <span className={styles.vehicleBannerIcon}>🚗</span>
+            <div className={styles.vehicleBannerText}>
+              <strong>No active vehicle found.</strong>{' '}
+              Please add your vehicle details to publish rides.
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => setShowVehicleModal(true)}
+          >
+            Add Vehicle
+          </Button>
+        </div>
+      )}
+
+      {/* Vehicle info bar */}
+      {!vehicleLoading && activeVehicle && (
+        <div className={styles.vehicleBar}>
+          <div className={styles.vehicleBarContent}>
+            <span className={styles.vehicleBarIcon}>🚗</span>
+            <div className={styles.vehicleBarInfo}>
+              <span className={styles.vehicleBarLabel}>Your vehicle</span>
+              <span className={styles.vehicleBarValue}>{vehicleLabel}</span>
+            </div>
+            {vehicleSeats && (
+              <span className={styles.vehicleBarSeats}>{vehicleSeats} seats</span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => setShowVehicleModal(true)}
+          >
+            Change
+          </Button>
+        </div>
+      )}
+
       {message && <div className={styles.successMsg}>{message}</div>}
       {error && (
-        <div style={{ padding: 'var(--space-4)', background: '#FDECEB', color: 'var(--color-danger)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-6)' }}>
-          {error}
-        </div>
+        <div className={styles.errorMsg}>{error}</div>
       )}
 
       <div className={styles.formCard}>
@@ -112,26 +216,87 @@ export default function PostRide() {
           {/* Origin details */}
           <h3 className={styles.sectionTitle}>Pickup Details</h3>
           <div className={styles.row}>
-            <Input label="City" name="originCity" value={form.originCity} onChange={handleChange} placeholder="e.g. Mumbai" required />
-            <Input label="Address" name="originAddress" value={form.originAddress} onChange={handleChange} placeholder="Full pickup address" required />
+            <Input
+              label="City"
+              name="originCity"
+              value={form.originCity}
+              onChange={handleChange}
+              placeholder="e.g. Mumbai"
+              required
+            />
+            <Input
+              label="Address"
+              name="originAddress"
+              value={form.originAddress}
+              onChange={handleChange}
+              placeholder="Full pickup address"
+              required
+            />
           </div>
 
           {/* Destination details */}
           <h3 className={styles.sectionTitle}>Drop-off Details</h3>
           <div className={styles.row}>
-            <Input label="City" name="destinationCity" value={form.destinationCity} onChange={handleChange} placeholder="e.g. Pune" required />
-            <Input label="Address" name="destinationAddress" value={form.destinationAddress} onChange={handleChange} placeholder="Full drop-off address" required />
+            <Input
+              label="City"
+              name="destinationCity"
+              value={form.destinationCity}
+              onChange={handleChange}
+              placeholder="e.g. Pune"
+              required
+            />
+            <Input
+              label="Address"
+              name="destinationAddress"
+              value={form.destinationAddress}
+              onChange={handleChange}
+              placeholder="Full drop-off address"
+              required
+            />
           </div>
 
           {/* Trip details */}
           <h3 className={styles.sectionTitle}>Trip Details</h3>
           <div className={styles.row}>
-            <Input label="Departure Date" name="departureDate" type="date" value={form.departureDate} onChange={handleChange} required />
-            <Input label="Departure Time" name="departureTime" type="time" value={form.departureTime} onChange={handleChange} required />
+            <Input
+              label="Departure Date"
+              name="departureDate"
+              type="date"
+              value={form.departureDate}
+              onChange={handleChange}
+              required
+            />
+            <Input
+              label="Departure Time"
+              name="departureTime"
+              type="time"
+              value={form.departureTime}
+              onChange={handleChange}
+              required
+            />
           </div>
           <div className={styles.row}>
-            <Input label="Total Seats" name="totalSeats" type="number" min="1" max="7" value={form.totalSeats} onChange={handleChange} required />
-            <Input label="Price per Seat ($)" name="pricePerSeat" type="number" min="1" step="0.01" value={form.pricePerSeat} onChange={handleChange} required />
+            <Input
+              label="Available Seats"
+              name="totalSeats"
+              type="number"
+              min="1"
+              max={vehicleSeats || 7}
+              value={form.totalSeats}
+              onChange={handleChange}
+              helperText={vehicleSeats ? `Your vehicle has ${vehicleSeats} seats` : undefined}
+              required
+            />
+            <Input
+              label="Price per Seat ($)"
+              name="pricePerSeat"
+              type="number"
+              min="1"
+              step="0.01"
+              value={form.pricePerSeat}
+              onChange={handleChange}
+              required
+            />
           </div>
 
           <Textarea
@@ -148,12 +313,31 @@ export default function PostRide() {
             <span>Drop-off: {destLat.toFixed(4)}, {destLng.toFixed(4)}</span>
           </div>
 
-          <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-            <Button type="submit" loading={saving}>Publish Ride</Button>
-            <Button variant="ghost" onClick={() => navigate(-1)}>Cancel</Button>
+          <div className={styles.formActions}>
+            <Button
+              type="submit"
+              loading={saving}
+              disabled={!activeVehicle}
+            >
+              {activeVehicle ? 'Publish Ride' : 'Add Vehicle First'}
+            </Button>
+            <Button variant="ghost" onClick={() => navigate(-1)}>
+              Cancel
+            </Button>
           </div>
         </form>
       </div>
+
+      {/* Vehicle Modal */}
+      <VehicleModal
+        isOpen={showVehicleModal}
+        onClose={() => {
+          // Only close if there's a vehicle; otherwise they must add one
+          if (activeVehicle) setShowVehicleModal(false);
+        }}
+        existingVehicle={activeVehicle}
+        onSaved={handleVehicleSaved}
+      />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 .container {
   padding: var(--space-8) var(--space-4);
-  max-width: 960px;
+  max-width: 900px;
   margin: 0 auto;
+  animation: fadeInUp 400ms var(--ease-out);
 }
 
 .section {
@@ -10,10 +11,12 @@
 
 .sectionTitle {
   font-size: var(--font-size-lg);
-  font-weight: 700;
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: var(--letter-spacing-tight);
   margin-bottom: var(--space-4);
 }
 
+/* — Trip List — */
 .tripList {
   display: flex;
   flex-direction: column;
@@ -23,11 +26,18 @@
 .tripCard {
   background-color: var(--bg-primary);
   border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  transition: box-shadow var(--transition-base);
+  cursor: pointer;
+  animation: fadeInUp 300ms var(--ease-out) both;
+}
+
+.tripCard:hover {
+  box-shadow: var(--shadow-sm);
 }
 
 .tripInfo {
@@ -37,8 +47,9 @@
 }
 
 .routeText {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   font-size: var(--font-size-base);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .tripMeta {
@@ -49,11 +60,25 @@
 .countdown {
   font-size: var(--font-size-xs);
   color: var(--color-success);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
+/* — Empty State — */
 .emptyState {
   text-align: center;
-  padding: var(--space-8) var(--space-4);
+  padding: var(--space-10) var(--space-4);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+}
+
+.emptyState p {
   color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-3);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }

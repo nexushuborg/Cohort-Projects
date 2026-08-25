@@ -1,15 +1,18 @@
 .container {
   padding: var(--space-8) var(--space-4);
-  max-width: 720px;
+  max-width: 800px;
   margin: 0 auto;
+  animation: fadeInUp 400ms var(--ease-out);
 }
 
 .header {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-8);
 }
 
 .header h1 {
   font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: var(--letter-spacing-tight);
   margin-bottom: var(--space-2);
 }
 
@@ -18,52 +21,33 @@
   font-size: var(--font-size-sm);
 }
 
-.formCard {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  padding: var(--space-8);
-}
-
-.formTitle {
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  margin-bottom: var(--space-6);
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-}
-
-.successMsg {
-  padding: var(--space-4);
-  background-color: #E6F9EF;
-  color: #06C167;
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-6);
-  font-weight: 500;
-}
-
+/* — Vehicle List — */
 .vehicleList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .vehicleCard {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: var(--space-5);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  transition: box-shadow var(--transition-base);
+}
+
+.vehicleCard:hover {
+  box-shadow: var(--shadow-sm);
 }
 
 .vehicleInfo h3 {
   font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
   margin-bottom: var(--space-1);
 }
 
@@ -72,12 +56,67 @@
   color: var(--color-text-secondary);
 }
 
+/* — Form — */
+.formCard {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+}
+
+.formTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-6);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* — Success Message — */
+.successMsg {
+  padding: var(--space-4);
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  font-weight: var(--font-weight-medium);
+  border: 1px solid rgba(6, 193, 103, 0.2);
+  animation: fadeInDown 300ms var(--ease-out);
+}
+
+/* — Empty State — */
 .emptyState {
   text-align: center;
   padding: var(--space-12) var(--space-4);
-  color: var(--color-text-secondary);
 }
 
 .emptyState p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
   margin-bottom: var(--space-4);
+}
+
+@media (max-width: 600px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+
+  .formCard {
+    padding: var(--space-5);
+  }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

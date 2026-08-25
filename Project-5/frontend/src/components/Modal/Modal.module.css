@@ -5,20 +5,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   padding: var(--space-4);
-  animation: fadeIn var(--transition-fast) ease;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.overlayVisible {
+  opacity: 1;
 }
 
 .modal {
   background-color: var(--bg-primary);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   width: 100%;
-  max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-lg);
-  animation: slideUp var(--transition-normal) ease;
+  box-shadow: var(--shadow-2xl);
+  opacity: 0;
+  transform: scale(0.96) translateY(8px);
+  transition: opacity 200ms ease, transform 200ms var(--ease-out);
+}
+
+.modalVisible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
 }
 
 .modalHeader {
@@ -27,27 +38,33 @@
   justify-content: space-between;
   padding: var(--space-5) var(--space-6);
   border-bottom: 1px solid var(--color-border-light);
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  z-index: 1;
 }
 
 .modalTitle {
   font-size: var(--font-size-lg);
-  font-weight: 700;
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .modalClose {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  font-size: var(--font-size-lg);
   color: var(--color-text-secondary);
-  transition: background-color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .modalClose:hover {
   background-color: var(--bg-surface);
+  color: var(--color-text-primary);
 }
 
 .modalBody {
@@ -61,14 +78,8 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--color-border-light);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(16px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  background-color: var(--bg-primary);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  position: sticky;
+  bottom: 0;
 }

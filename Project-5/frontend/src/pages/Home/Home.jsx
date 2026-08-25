@@ -6,6 +6,7 @@ import { Input } from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import Spinner from '../../components/Spinner/Spinner';
 import RoutePreview from '../../components/RoutePreview/RoutePreview';
+import Badge from '../../components/Badge/Badge';
 import { useAuth } from '../../context/AuthContext';
 import styles from './Home.module.css';
 
@@ -65,7 +66,6 @@ export default function Home() {
         setResults(data.data?.items || data.data || []);
       }
 
-      // Save recent search
       if (isAuthenticated && form.origin && form.destination) {
         try {
           await recentSearchAPI.create({
@@ -92,10 +92,7 @@ export default function Home() {
       date: search.search_date?.split('T')[0] || '',
       seats: '',
     });
-    // Auto-search
-    setTimeout(() => {
-      handleSearch();
-    }, 100);
+    setTimeout(() => handleSearch(), 100);
   };
 
   const handleDeleteRecent = async (id, e) => {
@@ -114,59 +111,82 @@ export default function Home() {
   });
 
   return (
-    <div className={styles.container}>
+    <div className={styles.page}>
+      {/* Hero Section */}
       <div className={styles.hero}>
-        <h1>Find your next ride</h1>
-        <p>Affordable, shared rides at your fingertips</p>
+        <div className={styles.heroContent}>
+          <h1 className={styles.heroTitle}>
+            Go anywhere with{' '}
+            <span className={styles.heroHighlight}>Freebuff</span>
+          </h1>
+          <p className={styles.heroSubtitle}>
+            Find affordable rides heading your way. Search, book, and ride with verified drivers.
+          </p>
+        </div>
       </div>
 
-      <div className={styles.searchCard}>
-        <form onSubmit={handleSearch}>
-          <div className={styles.searchRow}>
-            <Input
-              label="From"
-              name="origin"
-              placeholder="Origin city"
-              value={form.origin}
-              onChange={handleChange}
-            />
-            <Input
-              label="To"
-              name="destination"
-              placeholder="Destination city"
-              value={form.destination}
-              onChange={handleChange}
-            />
-          </div>
-          <div className={styles.searchRow3}>
-            <Input
-              label="Date"
-              name="date"
-              type="date"
-              value={form.date}
-              onChange={handleChange}
-            />
-            <Input
-              label="Seats needed"
-              name="seats"
-              type="number"
-              min="1"
-              max="7"
-              placeholder="1"
-              value={form.seats}
-              onChange={handleChange}
-            />
-            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <Button type="submit" fullWidth loading={loading}>
-                Search
-              </Button>
+      {/* Search Card */}
+      <div className={styles.searchSection}>
+        <div className={styles.searchCard}>
+          <form onSubmit={handleSearch}>
+            <div className={styles.searchRow}>
+              <div className={styles.searchField}>
+                <div className={styles.fieldIcon}>📍</div>
+                <Input
+                  label="From"
+                  name="origin"
+                  placeholder="Origin city"
+                  value={form.origin}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles.searchDivider}>
+                <span className={styles.dividerLine} />
+                <span className={styles.dividerDot} />
+                <span className={styles.dividerLine} />
+              </div>
+              <div className={styles.searchField}>
+                <div className={styles.fieldIcon}>🏁</div>
+                <Input
+                  label="To"
+                  name="destination"
+                  placeholder="Destination city"
+                  value={form.destination}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
-          </div>
-        </form>
+            <div className={styles.searchRowBottom}>
+              <Input
+                label="Date"
+                name="date"
+                type="date"
+                value={form.date}
+                onChange={handleChange}
+              />
+              <Input
+                label="Seats"
+                name="seats"
+                type="number"
+                min="1"
+                max="7"
+                placeholder="1"
+                value={form.seats}
+                onChange={handleChange}
+              />
+              <div className={styles.searchBtnWrap}>
+                <Button type="submit" fullWidth loading={loading} size="lg">
+                  Search rides
+                </Button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
 
+      {/* Recent Searches */}
       {isAuthenticated && recentSearches.length > 0 && !searched && (
-        <div>
+        <div className={styles.recentSection}>
           <span className={styles.recentLabel}>Recent searches</span>
           <div className={styles.recentChips}>
             {recentSearches.slice(0, 6).map((s) => (
@@ -175,11 +195,12 @@ export default function Home() {
                 className={styles.chip}
                 onClick={() => handleRecentChipClick(s)}
               >
-                {s.origin} → {s.destination}
+                <span className={styles.chipRoute}>{s.origin} → {s.destination}</span>
                 <span
                   className={styles.chipRemove}
                   onClick={(e) => handleDeleteRecent(s.id, e)}
                   role="button"
+                  aria-label="Remove"
                 >
                   ✕
                 </span>
@@ -189,21 +210,34 @@ export default function Home() {
         </div>
       )}
 
+      {/* Results */}
       {searched && (
-        <>
+        <div className={styles.resultsSection}>
           <div className={styles.resultsHeader}>
-            <h2 className={styles.resultsTitle}>
-              {loading ? 'Searching...' : `${sortedResults.length} ride${sortedResults.length !== 1 ? 's' : ''} found`}
-            </h2>
+            <div>
+              <h2 className={styles.resultsTitle}>
+                {loading ? 'Searching...' : `${sortedResults.length} ride${sortedResults.length !== 1 ? 's' : ''} found`}
+              </h2>
+              {!loading && sortedResults.length > 0 && (
+                <p className={styles.resultsSub}>
+                  {form.origin && form.destination
+                    ? `${form.origin} → ${form.destination}`
+                    : 'Showing all available rides'}
+                </p>
+              )}
+            </div>
             {sortedResults.length > 1 && (
-              <select
-                className={styles.sortSelect}
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="departure_at">Sort by Departure</option>
-                <option value="price_per_seat">Sort by Price</option>
-              </select>
+              <div className={styles.sortWrap}>
+                <span className={styles.sortLabel}>Sort by</span>
+                <select
+                  className={styles.sortSelect}
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="departure_at">Departure time</option>
+                  <option value="price_per_seat">Lowest price</option>
+                </select>
+              </div>
             )}
           </div>
 
@@ -211,42 +245,64 @@ export default function Home() {
             <Spinner />
           ) : sortedResults.length > 0 ? (
             <div className={styles.rideList}>
-              {sortedResults.map((ride) => (
+              {sortedResults.map((ride, index) => (
                 <div
                   key={ride.id}
                   className={styles.rideCard}
                   onClick={() => navigate(`/rides/${ride.id}`)}
                   role="button"
                   tabIndex={0}
+                  style={{ animationDelay: `${index * 60}ms` }}
                 >
-                  <RoutePreview
-                    originLat={ride.originLat}
-                    originLng={ride.originLng}
-                    destinationLat={ride.destinationLat}
-                    destinationLng={ride.destinationLng}
-                    variant="card"
-                  />
+                  <div className={styles.rideMap}>
+                    <RoutePreview
+                      originLat={ride.originLat}
+                      originLng={ride.originLng}
+                      destinationLat={ride.destinationLat}
+                      destinationLng={ride.destinationLng}
+                      variant="card"
+                    />
+                  </div>
                   <div className={styles.rideCardBody}>
-                    <div>
+                    <div className={styles.rideInfo}>
                       <div className={styles.rideRoute}>
                         <span className={styles.routeFrom}>{ride.originCity || ride.originAddress}</span>
-                        <span className={styles.routeArrow}>→</span>
+                        <span className={styles.routeArrow}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                          </svg>
+                        </span>
                         <span className={styles.routeTo}>{ride.destinationCity || ride.destinationAddress}</span>
                       </div>
                       <div className={styles.rideMeta}>
-                        <span>{format(new Date(ride.departureAt), 'MMM d, h:mm a')}</span>
-                        <span>{ride.availableSeats} seat{ride.availableSeats !== 1 ? 's' : ''} left</span>
+                        <span className={styles.metaItem}>
+                          📅 {format(new Date(ride.departureAt), 'MMM d, h:mm a')}
+                        </span>
+                        <span className={styles.metaItem}>
+                          💺 {ride.availableSeats} seat{ride.availableSeats !== 1 ? 's' : ''} left
+                        </span>
                       </div>
                       {ride.driver && (
                         <div className={styles.driverInfo}>
-                          {ride.driver.name} &middot; ★ {ride.driver.avgRating || 'New'}
-                          {ride.vehicle && ` · ${ride.vehicle.make} ${ride.vehicle.model}`}
+                          <div className={styles.driverAvatar}>
+                            {ride.driver.name?.charAt(0)}
+                          </div>
+                          <span className={styles.driverName}>{ride.driver.name}</span>
+                          <span className={styles.driverRating}>
+                            ★ {ride.driver.avgRating || 'New'}
+                          </span>
+                          {ride.vehicle && (
+                            <span className={styles.driverVehicle}>
+                              · {ride.vehicle.make} {ride.vehicle.model}
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
                     <div className={styles.ridePrice}>
-                      <div className={styles.ridePriceValue}>${ride.pricePerSeat}</div>
-                      <div className={styles.ridePriceLabel}>per seat</div>
+                      <div className={styles.priceValue}>${ride.pricePerSeat}</div>
+                      <div className={styles.priceLabel}>per seat</div>
                     </div>
                   </div>
                 </div>
@@ -254,11 +310,14 @@ export default function Home() {
             </div>
           ) : (
             <div className={styles.emptyState}>
-              <h3>No rides found</h3>
-              <p>Try different search criteria or check back later.</p>
+              <div className={styles.emptyIcon}>🔍</div>
+              <h3 className={styles.emptyTitle}>No rides found</h3>
+              <p className={styles.emptyText}>
+                Try different search criteria or check back later for new rides.
+              </p>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

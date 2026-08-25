@@ -11,9 +11,7 @@ const {
   rideRatingsParamsSchema
 } = require('./ratings.validation');
 
-const {
-  authenticateToken
-} = require('../../middleware/auth.middleware');
+const authenticateToken = require('../../middleware/auth.middleware');
 
 const validate =
   require('../../middleware/validate.middleware');

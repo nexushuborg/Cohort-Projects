@@ -23,7 +23,6 @@ export default function Register() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
-    // Clear field error for the field being edited
     if (fieldErrors[e.target.name]) {
       setFieldErrors((prev) => {
         const next = { ...prev };
@@ -36,7 +35,6 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Client-side validation
     if (form.password !== form.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -46,8 +44,6 @@ export default function Register() {
     setError('');
     setFieldErrors({});
 
-    // Build payload: omit phone if empty (backend Joi.allow('', null) — sending
-    // empty string is fine, but omitting is cleaner)
     const payload = {
       name: form.name,
       email: form.email,
@@ -71,72 +67,111 @@ export default function Register() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Create an account</h1>
-        <p className={styles.subtitle}>Join as a rider or driver</p>
-
-        {error && <div className={styles.errorBanner}>{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <Input
-            label="Full Name"
-            name="name"
-            placeholder="John Doe"
-            value={form.name}
-            onChange={handleChange}
-            error={fieldErrors.name}
-            required
-          />
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={handleChange}
-            error={fieldErrors.email}
-            required
-          />
-          <Input
-            label="Phone (optional)"
-            name="phone"
-            type="tel"
-            placeholder="+1 (555) 000-0000"
-            value={form.phone}
-            onChange={handleChange}
-            error={fieldErrors.phone}
-          />
-          <div className={styles.row}>
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              placeholder="Min 8 characters"
-              value={form.password}
-              onChange={handleChange}
-              error={fieldErrors.password}
-              helperText="Uppercase, number, and special character required"
-              required
-            />
-            <Input
-              label="Confirm Password"
-              name="confirmPassword"
-              type="password"
-              placeholder="Re-enter password"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              required
-            />
+    <div className={styles.page}>
+      {/* Branding Panel */}
+      <div className={styles.brandPanel}>
+        <div className={styles.brandContent}>
+          <div className={styles.brandLogo}>
+            <span className={styles.brandIcon}>◆</span>
+            Freebuff
           </div>
-          <Button type="submit" fullWidth loading={loading}>
-            Create account
-          </Button>
-        </form>
+          <h1 className={styles.brandTitle}>
+            Start your journey&nbsp;today.
+          </h1>
+          <p className={styles.brandSubtitle}>
+            Join thousands of riders and drivers sharing rides across the country.
+          </p>
+          <div className={styles.brandStats}>
+            <div className={styles.stat}>
+              <div className={styles.statValue}>10K+</div>
+              <div className={styles.statLabel}>Active Users</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statValue}>50K+</div>
+              <div className={styles.statLabel}>Rides Shared</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statValue}>4.8</div>
+              <div className={styles.statLabel}>Avg. Rating</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <p className={styles.footer}>
-          Already have an account? <Link to="/login">Log in</Link>
-        </p>
+      {/* Form Panel */}
+      <div className={styles.formPanel}>
+        <div className={styles.formCard}>
+          <div className={styles.formHeader}>
+            <h1 className={styles.title}>Create an account</h1>
+            <p className={styles.subtitle}>Join Freebuff as a rider or driver</p>
+          </div>
+
+          {error && <div className={styles.errorBanner}>{error}</div>}
+
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <Input
+              label="Full Name"
+              name="name"
+              placeholder="John Doe"
+              value={form.name}
+              onChange={handleChange}
+              error={fieldErrors.name}
+              required
+            />
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={handleChange}
+              error={fieldErrors.email}
+              required
+            />
+            <Input
+              label="Phone (optional)"
+              name="phone"
+              type="tel"
+              placeholder="+1 (555) 000-0000"
+              value={form.phone}
+              onChange={handleChange}
+              error={fieldErrors.phone}
+            />
+            <div className={styles.row}>
+              <Input
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="Min 8 characters"
+                value={form.password}
+                onChange={handleChange}
+                error={fieldErrors.password}
+                required
+              />
+              <Input
+                label="Confirm Password"
+                name="confirmPassword"
+                type="password"
+                placeholder="Re-enter password"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <Button type="submit" fullWidth loading={loading} size="lg">
+              Create account
+            </Button>
+          </form>
+
+          <div className={styles.divider}>
+            <span>or</span>
+          </div>
+
+          <p className={styles.footer}>
+            Already have an account?{' '}
+            <Link to="/login" className={styles.footerLink}>Log in</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
