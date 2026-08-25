@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Search from "./pages/Search";
 import PropertyDetails from "./pages/PropertyDetails";
 import Booking from "./pages/Booking";
+import Checkout from "./pages/Checkout";
 import MyTrips from "./pages/MyTrips";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -13,6 +14,8 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import HostDashboard from "./pages/host/HostDashboard";
 import MyListings from "./pages/host/MyListings";
 import CreateListing from "./pages/host/CreateListing";
+import EditListing from "./pages/host/EditListing";
+import HostBookings from "./pages/host/HostBookings";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Users from "./pages/admin/Users";
@@ -41,6 +44,8 @@ const router = createBrowserRouter([
         children: [
           { path: "properties/:id/book", 
             element: <Booking /> },
+          { path: "checkout",
+             element: <Checkout /> },
           { path: "trips",
              element: <MyTrips /> },
           { path: "dashboard",
@@ -61,6 +66,10 @@ const router = createBrowserRouter([
              element: <MyListings /> },
           { path: "host/create-listing",
              element: <CreateListing /> },
+          { path: "host/edit-listing/:id",
+             element: <EditListing /> },
+          { path: "host/bookings",
+             element: <HostBookings /> },
         ],
       },
 

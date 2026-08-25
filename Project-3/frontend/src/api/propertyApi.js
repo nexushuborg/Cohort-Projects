@@ -34,4 +34,15 @@ export const uploadPropertyPhoto = async (id, formData) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
-};
+};
+
+export const getPropertyTypes = async () => {
+  const response = await api.get("/properties/types");
+  return response.data;
+};
+
+export const getAmenities = async () => {
+  const response = await api.get("/properties/amenities");
+  return response.data;
+};
+
