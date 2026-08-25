@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --detectOpenHandles",
     "start": "nodemon src/app.js"
   },
   "keywords": [],
@@ -25,5 +25,9 @@
     "nodemon": "^3.1.14",
     "pg": "^8.23.0",
     "uuid": "^14.0.2"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2"
   }
 }
