@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getPropertyById } from "../api/propertyApi";
 import PropertyGallery from "../components/property/PropertyGallery";
+import ReviewList from "../components/reviews/ReviewList";
 
 function PropertyDetails() {
   const { id } = useParams();
@@ -272,6 +273,9 @@ function PropertyDetails() {
 
               </div>
             </section>
+
+            {/* Guest Reviews & Ratings */}
+            <ReviewList propertyId={property.id} />
 
           </div>
 
