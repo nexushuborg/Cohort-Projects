@@ -11,6 +11,9 @@ const walletRoutes = require('./modules/wallet/wallet.routes');
 const paymentRoutes = require('./modules/payments/payment.routes');
 const driverRoutes = require('./modules/drivers/driver.routes');
 const vehicleRoutes = require('./modules/vehicles/vehicles.routes');
+const searchRoutes = require('./modules/search/search.routes');
+const recentSearchesRoutes = require('./modules/search/recentSearches.routes');
+const dashboardRoutes = require('./modules/dashboards/dashboards.routes');
 
 const app = express();
 
