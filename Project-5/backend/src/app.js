@@ -12,11 +12,6 @@ const paymentRoutes = require('./modules/payments/payment.routes');
 const driverRoutes = require('./modules/drivers/driver.routes');
 const vehicleRoutes = require('./modules/vehicles/vehicles.routes');
 
-// Phase 7 Routes
-const searchRoutes = require('./modules/search/search.routes');
-const recentSearchesRoutes = require('./modules/search/recentSearches.routes');
-const dashboardRoutes = require('./modules/dashboards/dashboards.routes');
-
 const app = express();
 
 // Security
@@ -33,6 +28,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request logging
 app.use(morgan('dev'));
+
+app.use('/drivers', driverRoutes);
+app.use('/vehicles', vehicleRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
