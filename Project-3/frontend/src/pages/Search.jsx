@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import PropertyGrid from "../components/property/PropertyGrid";
 import PropertyFilters from "../components/property/PropertyFilters";
-import Loader from "../components/common/loader";
+import Loader from "../components/common/Loader";
 import ErrorMessage from "../components/common/ErrorMessage";
 
 import useProperties from "../hooks/useProperties";

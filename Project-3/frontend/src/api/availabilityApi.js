@@ -1,16 +1,34 @@
 import api from "./axios";
 
-export const getAvailability = async (propertyId) => {
-  const response = await api.get(`/availability/${propertyId}`);
+// Get availability / blocked dates for a property
+export const getPropertyAvailability = async (propertyId) => {
+  const response = await api.get(
+    `/availability/${propertyId}`
+  );
+
   return response.data;
 };
 
-export const blockDates = async (propertyId, blockData) => {
-  const response = await api.post(`/availability/${propertyId}/block`, blockData);
+// Block dates for a property
+export const blockPropertyDates = async (
+  propertyId,
+  availabilityData
+) => {
+  const response = await api.post(
+    `/availability/${propertyId}/block`,
+    availabilityData
+  );
+
   return response.data;
 };
 
-export const unblockDates = async (blockId) => {
-  const response = await api.delete(`/availability/blocks/${blockId}`);
+// Remove a blocked-date entry
+export const deleteAvailabilityBlock = async (
+  blockId
+) => {
+  const response = await api.delete(
+    `/availability/blocks/${blockId}`
+  );
+
   return response.data;
 };
