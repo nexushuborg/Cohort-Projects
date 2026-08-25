@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import ReviewCard from "./ReviewCard";
+import ReviewForm from "./ReviewForm";
 
 function ReviewList({ propertyId }) {
   const { user } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const [scores, setScores] = useState({
     cleanliness: 0,
@@ -59,6 +61,11 @@ function ReviewList({ propertyId }) {
     fetchReviews();
   }, [propertyId]);
 
+  const handleReviewSubmitted = (newReview) => {
+    setReviews((prev) => [newReview, ...prev]);
+    setShowReviewForm(false);
+  };
+
   const handleDelete = (reviewId) => {
     if (window.confirm("Are you sure you want to delete your review?")) {
       api.delete(`/reviews/${reviewId}`)
@@ -72,15 +79,36 @@ function ReviewList({ propertyId }) {
     }
   };
 
-  if (loading) return <div className="text-gray-500 text-sm">Loading reviews...</div>;
-  if (error) return <div className="text-red-500 text-sm">{error}</div>;
+  if (loading) return <div className="text-gray-500 text-sm py-4">Loading reviews...</div>;
+  if (error) return <div className="text-red-500 text-sm py-4">{error}</div>;
 
   return (
     <div className="mt-8 border-t border-gray-200 pt-8">
-      <h3 className="text-xl font-bold text-gray-900">
-        ★ {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : "New"}{" "}
-        · {reviews.length} reviews
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold text-gray-900">
+          ★ {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + (r.rating || 5), 0) / reviews.length).toFixed(1) : "New"}{" "}
+          · {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+        </h3>
+
+        {user && (
+          <button
+            type="button"
+            onClick={() => setShowReviewForm((prev) => !prev)}
+            className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
+          >
+            {showReviewForm ? "Cancel" : "+ Write a Review"}
+          </button>
+        )}
+      </div>
+
+      {showReviewForm && (
+        <div className="mt-6">
+          <ReviewForm
+            propertyId={propertyId}
+            onReviewSubmit={handleReviewSubmitted}
+          />
+        </div>
+      )}
 
       {reviews.length > 0 && (
         <div className="mt-6 grid gap-x-12 gap-y-4 sm:grid-cols-2">
