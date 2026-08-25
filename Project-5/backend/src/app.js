@@ -11,8 +11,6 @@ const walletRoutes = require('./modules/wallet/wallet.routes');
 const paymentRoutes = require('./modules/payments/payment.routes');
 const driverRoutes = require('./modules/drivers/driver.routes');
 const vehicleRoutes = require('./modules/vehicles/vehicles.routes');
-const ratingRoutes =
-require('./modules/ratings/ratings.routes');
 
 const app = express();
 
@@ -32,11 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 app.use('/drivers', driverRoutes);
-
 app.use('/vehicles', vehicleRoutes);
-
-app.use('/ratings', ratingRoutes);
-
 
 // Health check
 app.get('/health', (req, res) => {
@@ -48,9 +42,14 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/auth', authRoutes);
+app.use('/drivers', driverRoutes);
+app.use('/vehicles', vehicleRoutes);
+app.use('/rides/search', searchRoutes);
 app.use('/rides', rideRoutes);
 app.use('/wallet', walletRoutes);
 app.use('/payments', paymentRoutes);
+app.use('/recent-searches', recentSearchesRoutes);
+app.use('/dashboards', dashboardRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
