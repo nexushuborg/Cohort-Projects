@@ -1,16 +1,30 @@
 import api from "./axios";
 
-export const updateProfile = async (userData) => {
-  const response = await api.put("/users/profile", userData);
+// Get all users
+// Mainly used by admin
+export const getAllUsers = async (params = {}) => {
+  const response = await api.get("/users", {
+    params,
+  });
+
   return response.data;
 };
 
-export const getPublicProfile = async (id) => {
-  const response = await api.get(`/users/${id}/public`);
+// Get the currently logged-in user's profile
+export const updateProfile = async (profileData) => {
+  const response = await api.put(
+    "/users/profile",
+    profileData
+  );
+
   return response.data;
 };
 
-export const getAllUsers = async () => {
-  const response = await api.get("/users");
+// Get a user's public profile
+export const getPublicProfile = async (userId) => {
+  const response = await api.get(
+    `/users/${userId}/public`
+  );
+
   return response.data;
 };

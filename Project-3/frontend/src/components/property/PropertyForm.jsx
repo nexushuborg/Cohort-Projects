@@ -11,20 +11,26 @@ function PropertyForm({
   const isEditMode = Boolean(property);
 
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    address: "",
-    city: "",
-    state: "",
-    country: "",
-    price_per_night: "",
-    max_guests: "",
-    bedrooms: "",
-    bathrooms: "",
-    beds: "",
-    property_type_id: "",
-    amenity_ids: [],
-  });
+  title: "",
+  description: "",
+  address: "",
+  city: "",
+  state: "",
+  country: "",
+  zip_code: "",
+  latitude: "",
+  longitude: "",
+  price_per_night: "",
+  max_guests: "",
+  bedrooms: "",
+  bathrooms: "",
+  beds: "",
+  min_nights: "",
+  max_nights: "",
+  cancellation_policy: "flexible",
+  property_type_id: "",
+  amenity_ids: [],
+});
 
   useEffect(() => {
     if (property) {
@@ -35,11 +41,18 @@ function PropertyForm({
         city: property.city || "",
         state: property.state || "",
         country: property.country || "",
+        zip_code: property.zip_code || "",
+        latitude: property.latitude || "",
+        longitude: property.longitude || "",
         price_per_night: property.price_per_night || "",
         max_guests: property.max_guests || "",
         bedrooms: property.bedrooms || "",
         bathrooms: property.bathrooms || "",
         beds: property.beds || "",
+        min_nights: property.min_nights || "",
+        max_nights: property.max_nights || "",
+        cancellation_policy:
+          property.cancellation_policy || "flexible",
         property_type_id: property.property_type_id || "",
         amenity_ids: Array.isArray(property.amenity_ids)
           ? property.amenity_ids
@@ -77,18 +90,37 @@ function PropertyForm({
     event.preventDefault();
 
     const payload = {
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      address: formData.address.trim(),
-      city: formData.city.trim(),
-      state: formData.state.trim(),
-      country: formData.country.trim(),
-      price_per_night: Number(formData.price_per_night),
-      max_guests: Number(formData.max_guests),
-      bedrooms: Number(formData.bedrooms),
-      bathrooms: Number(formData.bathrooms),
-      beds: Number(formData.beds),
-    };
+  title: formData.title.trim(),
+  description: formData.description.trim(),
+  address: formData.address.trim(),
+  city: formData.city.trim(),
+  state: formData.state.trim(),
+  country: formData.country.trim(),
+
+  zip_code: formData.zip_code.trim(),
+
+  latitude:
+    formData.latitude === ""
+      ? null
+      : Number(formData.latitude),
+
+  longitude:
+    formData.longitude === ""
+      ? null
+      : Number(formData.longitude),
+
+  price_per_night: Number(formData.price_per_night),
+  max_guests: Number(formData.max_guests),
+  bedrooms: Number(formData.bedrooms),
+  bathrooms: Number(formData.bathrooms),
+  beds: Number(formData.beds),
+
+  min_nights: Number(formData.min_nights),
+  max_nights: Number(formData.max_nights),
+
+  cancellation_policy:
+    formData.cancellation_policy,
+};
 
     // property_type_id is supported by CREATE.
     if (formData.property_type_id) {
@@ -263,7 +295,68 @@ function PropertyForm({
               required
               className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
             />
+
           </div>
+        <div>
+          <label
+            htmlFor="zip_code"
+            className="mb-2 block text-sm font-medium text-gray-700"
+          >
+            ZIP / Postal Code
+          </label>
+
+          <input
+            id="zip_code"
+            name="zip_code"
+            type="text"
+            value={formData.zip_code}
+            onChange={handleChange}
+            placeholder="ZIP / Postal Code"
+            required
+            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label
+              htmlFor="latitude"
+              className="mb-2 block text-sm font-medium text-gray-700"
+            >
+              Latitude
+            </label>
+
+            <input
+              id="latitude"
+              name="latitude"
+              type="number"
+              step="any"
+              value={formData.latitude}
+              onChange={handleChange}
+              placeholder="e.g. 15.4909"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="longitude"
+              className="mb-2 block text-sm font-medium text-gray-700"
+            >
+              Longitude
+            </label>
+
+            <input
+              id="longitude"
+              name="longitude"
+              type="number"
+              step="any"
+              value={formData.longitude}
+              onChange={handleChange}
+              placeholder="e.g. 73.8278"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+        </div>
         </div>
       </div>
 
@@ -388,6 +481,79 @@ function PropertyForm({
           </div>
         </div>
       </div>
+      {/* Stay Rules */}
+<div className="space-y-4">
+  <h3 className="text-lg font-semibold text-gray-900">
+    Stay Rules
+  </h3>
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    {/* Minimum Nights */}
+    <div>
+      <label
+        htmlFor="min_nights"
+        className="mb-2 block text-sm font-medium text-gray-700"
+      >
+        Minimum Nights
+      </label>
+
+      <input
+        id="min_nights"
+        name="min_nights"
+        type="number"
+        min="1"
+        value={formData.min_nights}
+        onChange={handleChange}
+        required
+        className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+      />
+    </div>
+
+    {/* Maximum Nights */}
+    <div>
+      <label
+        htmlFor="max_nights"
+        className="mb-2 block text-sm font-medium text-gray-700"
+      >
+        Maximum Nights
+      </label>
+
+      <input
+        id="max_nights"
+        name="max_nights"
+        type="number"
+        min="1"
+        value={formData.max_nights}
+        onChange={handleChange}
+        required
+        className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+      />
+    </div>
+  </div>
+
+  {/* Cancellation Policy */}
+  <div>
+    <label
+      htmlFor="cancellation_policy"
+      className="mb-2 block text-sm font-medium text-gray-700"
+    >
+      Cancellation Policy
+    </label>
+
+    <select
+      id="cancellation_policy"
+      name="cancellation_policy"
+      value={formData.cancellation_policy}
+      onChange={handleChange}
+      required
+      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+    >
+      <option value="flexible">Flexible</option>
+      <option value="moderate">Moderate</option>
+      <option value="strict">Strict</option>
+    </select>
+  </div>
+</div>
 
       {/* Property Type */}
       {propertyTypes.length > 0 && (

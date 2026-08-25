@@ -15,12 +15,12 @@ export const getCurrentUser = async () => {
   return response.data;
 };
 
-export const refreshToken = async (tokenData) => {
-  const response = await api.post("/auth/refresh-token", tokenData);
+export const refreshToken = async () => {
+  const response = await api.post("/auth/refresh-token");
   return response.data;
 };
 
 export const passwordReset = async (resetData) => {
   const response = await api.post("/auth/password-reset", resetData);
   return response.data;
-};
+};
