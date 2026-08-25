@@ -75,7 +75,13 @@ function Navbar() {
                     Admin
                   </Link>
                 )}
-
+                <Link
+                  to="/dashboard"
+                  className="text-gray-600 transition hover:text-rose-500"
+                >
+                  Dashboard
+                </Link>
+                
                 <Link
                   to="/profile"
                   className="text-gray-600 transition hover:text-rose-500"

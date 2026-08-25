@@ -4,9 +4,18 @@ import Navbar from "./components/common/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Search from "./pages/Search";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import PropertyDetails from "./pages/PropertyDetails";
 import Booking from "./pages/Booking";
+import MyTrips from "./pages/MyTrips";
+import Checkout from "./pages/Checkout";
+import GuestDashboard from "./pages/GuestDashboard";
+import MyListings from "./pages/host/MyListings";
+import CreateListing from "./pages/host/CreateListing";
+import HostDashboard from "./pages/host/HostDashboard";
+import Users from "./pages/admin/Users";
+import Properties from "./pages/admin/Properties";
+import Bookings from "./pages/admin/Bookings";
 
 const router = createBrowserRouter([
   {
@@ -21,8 +30,22 @@ const router = createBrowserRouter([
         path: "search",
         element: <Search />,
       },
-        { path: "properties/:id/book", 
-          element: <Booking /> },
+      {
+        path: "properties/:id",
+        element: <PropertyDetails />,
+      },
+      {
+        path: "properties/:id/book",
+        element: <Booking />,
+      },
+      {
+        path: "trips",
+        element: <MyTrips />,
+      },
+      {
+        path: "checkout",
+        element: <Checkout />,
+      },
       {
         path: "login",
         element: <Login />,
@@ -32,12 +55,36 @@ const router = createBrowserRouter([
         element: <Register />,
       },
       {
+        path: "dashboard",
+        element: <GuestDashboard />,
+      },
+      {
         path: "admin",
         element: <AdminDashboard />,
       },
       {
-        path: "properties/:id",
-        element: <PropertyDetails />,
+      path: "admin/users",
+      element: <Users />,
+      },
+      {
+        path: "admin/properties",
+        element: <Properties />,
+      },
+      {
+        path: "admin/bookings",
+        element: <Bookings />,
+      },
+      {
+        path: "host/listings",
+        element: <MyListings />,
+      },
+      {
+        path: "host/create-listing",
+        element: <CreateListing />,
+      },
+      {
+        path: "host/dashboard",
+        element: <HostDashboard />,
       },
     ],
   },

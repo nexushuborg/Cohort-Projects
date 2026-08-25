@@ -62,7 +62,7 @@ function Booking() {
         <p className="mt-1 text-gray-500">{property.title} — {property.city}, {property.country}</p>
 
         <div className="mt-8 flex justify-center">
-          <BookingForm propertyId={property.id} pricePerNight={property.price_per_night} />
+          <BookingForm property={property} propertyId={property.id} pricePerNight={property.price_per_night} />
         </div>
       </div>
     </main>
