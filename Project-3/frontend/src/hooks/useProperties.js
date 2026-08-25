@@ -12,7 +12,7 @@ export default function useProperties() {
   const fetchProperties = (filters = {}) => {
     setLoading(true);
     setError("");
-    api.get("/properties/search", { params: filters })
+    api.get("/search", { params: filters })
       .then((response) => {
         setProperties(response.data.data.items || []);
         setPagination(response.data.data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });

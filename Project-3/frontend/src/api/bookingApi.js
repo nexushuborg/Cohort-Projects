@@ -31,3 +31,23 @@ export const getMyBookings = async () => {
   const response = await api.get("/bookings/my");
   return response.data;
 };
+
+export const getHostBookings = async () => {
+  const response = await api.get("/bookings/host");
+  return response.data;
+};
+
+export const approveBooking = async (id) => {
+  const response = await api.post(`/bookings/${id}/approve`);
+  return response.data;
+};
+
+export const declineBooking = async (id) => {
+  const response = await api.post(`/bookings/${id}/decline`);
+  return response.data;
+};
+
+export const cancelBooking = async (id, cancellationReason = "") => {
+  const response = await api.post(`/bookings/${id}/cancel`, { cancellation_reason: cancellationReason });
+  return response.data;
+};

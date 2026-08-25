@@ -14,3 +14,13 @@ export const getCurrentUser = async () => {
   const response = await api.get("/auth/me");
   return response.data;
 };
+
+export const refreshToken = async (tokenData) => {
+  const response = await api.post("/auth/refresh-token", tokenData);
+  return response.data;
+};
+
+export const passwordReset = async (resetData) => {
+  const response = await api.post("/auth/password-reset", resetData);
+  return response.data;
+};

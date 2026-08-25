@@ -13,6 +13,7 @@ const {
     getPropertyTypes,
     getAmenities
 } = require('./properties.controller.js');
+const { searchProperties } = require('../search/search.controller.js');
 const { authMiddleware, rbacMiddleware } = require('../../middleware/authMiddleware.js');
 
 const storage = multer.diskStorage({
@@ -29,6 +30,7 @@ const upload = multer({ storage: storage });
 propertyRoute
     .post('/', authMiddleware, rbacMiddleware(['host', 'admin']), createProperty)
     .get('/', getProperties)
+    .get('/search', searchProperties)
     .get('/types', getPropertyTypes)
     .get('/amenities', getAmenities)
     .get('/my', authMiddleware, rbacMiddleware(['host', 'admin']), getHostProperties)
@@ -38,4 +40,4 @@ propertyRoute
     .put('/:id/status', authMiddleware, rbacMiddleware(['host', 'admin']), updatePropertyStatus)
     .post('/:id/photos', authMiddleware, rbacMiddleware(['host', 'admin']), upload.single('photo'), uploadPropertyPhoto);
 
-module.exports = { propertyRoute };
+module.exports = { propertyRoute };
