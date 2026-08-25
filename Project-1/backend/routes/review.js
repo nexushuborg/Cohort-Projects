@@ -1,0 +1,235 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../models/connection');
+const { authenticate, authorize } = require('../middleware/auth');
+
+
+router.post('/:eventId', authenticate, authorize('attendee', 'admin'), async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { rating, text } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json(
+        {
+            status: 'failed',
+              error: { 
+                code: 'VALIDATION_ERROR', 
+                message: 'rating must be 1-5' 
+            } 
+        });
+    }
+
+    const result = await db.query(
+      `INSERT INTO reviews (event_id, user_id, rating, text)
+       VALUES ($1, $2, $3, $4)
+       RETURNING *`,
+      [eventId, req.user.sub, rating, text || null]
+    );
+
+    res.status(201).json(
+        { 
+            status: 'Success',
+            data: result.rows[0] 
+        });
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'CONFLICT', 
+                message: 'You already reviewed this event' 
+            } 
+        });
+    }
+    res.status(500).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'INTERNAL_ERROR', 
+                message: err.message 
+            } 
+        });
+  }
+});
+
+
+router.get('/:eventId', async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const result = await db.query(
+      `SELECT r.*, u.name AS user_name
+       FROM reviews r
+       JOIN users u ON u.id = r.user_id
+       WHERE r.event_id = $1
+       ORDER BY r.created_at DESC`,
+      [eventId]
+    );
+    res.json(
+        { 
+            status: 'Success',
+            data: { items: result.rows } 
+        });
+  } catch (err) {
+    res.status(500).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'INTERNAL_ERROR', 
+                message: err.message 
+            } 
+            
+        });
+  }
+});
+
+
+router.put('/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, text } = req.body;
+
+    const existing = await db.query(`SELECT * FROM reviews WHERE id = $1`, [id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'NOT_FOUND', 
+                message: 'Review not found' 
+            } 
+        });
+    }
+    if (existing.rows[0].user_id !== req.user.sub) {
+      return res.status(403).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'FORBIDDEN', 
+                message: 'Not your review' 
+            } 
+        });
+    }
+
+    const result = await db.query(
+      `UPDATE reviews SET rating = COALESCE($1, rating), text = COALESCE($2, text), updated_at = NOW()
+       WHERE id = $3 RETURNING *`,
+      [rating || null, text || null, id]
+    );
+    res.json(
+        { 
+            status: 'Success',
+            data: result.rows[0] 
+        });
+  } catch (err) {
+    res.status(500).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'INTERNAL_ERROR', 
+                message: err.message 
+            } 
+        });
+  }
+});
+
+
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = await db.query(`SELECT * FROM reviews WHERE id = $1`, [id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'NOT_FOUND', 
+                message: 'Review not found' 
+            } 
+        });
+    }
+    if (existing.rows[0].user_id !== req.user.sub && req.user.role !== 'admin') {
+      return res.status(403).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'FORBIDDEN', 
+                message: 'Not your review' 
+            } 
+        });
+    }
+
+    await db.query(`DELETE FROM reviews WHERE id = $1`, [id]);
+    res.json(
+        { 
+            status: 'Success',
+            data: { deleted: true } 
+        });
+  } catch (err) {
+    res.status(500).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'INTERNAL_ERROR', 
+                message: err.message 
+            } 
+        });
+  }
+});
+
+router.post('/:id/respond', authenticate, authorize('organizer', 'admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { response } = req.body;
+
+    const reviewRes = await db.query(
+      `SELECT r.*, e.organizer_id
+       FROM reviews r
+       JOIN events e ON e.id = r.event_id
+       WHERE r.id = $1`,
+      [id]
+    );
+    if (reviewRes.rows.length === 0) {
+      return res.status(404).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'NOT_FOUND', 
+                message: 'Review not found' 
+            } 
+        });
+    }
+    if (reviewRes.rows[0].organizer_id !== req.user.sub && req.user.role !== 'admin') {
+      return res.status(403).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'FORBIDDEN', 
+                message: 'Not your event' 
+            } 
+        });
+    }
+
+    const result = await db.query(
+      `UPDATE reviews SET organizer_response = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
+      [response, id]
+    );
+    res.json(
+        { 
+            status: 'Success',
+            data: result.rows[0] 
+        });
+  } catch (err) {
+    res.status(500).json(
+        { 
+        status: 'failed',
+            error: { 
+                code: 'INTERNAL_ERROR', 
+                message: err.message 
+            } 
+        });
+  }
+});
+
+module.exports = router;
