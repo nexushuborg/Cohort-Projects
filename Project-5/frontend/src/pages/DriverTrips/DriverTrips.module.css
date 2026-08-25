@@ -1,0 +1,91 @@
+.container {
+  padding: var(--space-8) var(--space-4);
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.tripList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tripCard {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+}
+
+.tripHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.routeText {
+  font-weight: 700;
+  font-size: var(--font-size-base);
+}
+
+.tripMeta {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.bookingsSection {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.bookingsTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+}
+
+.bookingRequest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+
+.bookingRider {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.bookingInfo {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.bookingActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.tripActions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-12) var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.emptyState h3 {
+  margin-bottom: var(--space-2);
+}

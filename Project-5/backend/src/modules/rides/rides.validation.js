@@ -10,11 +10,10 @@ const createRideSchema = Joi.object({
   destinationAddress: Joi.string().min(5).max(500).required(),
   destinationLat: Joi.number().min(-90).max(90).required(),
   destinationLng: Joi.number().min(-180).max(180).required(),
-  destinationCity: Joi.string().min(2).max(100).required(),
+  destinationCity: Joi.string().min(2).max(100).required(),  departureAt: Joi.date().iso().greater('now').required(),
 
-  departureAt: Joi.date().iso().greater('now').required(),
+  totalSeats: Joi.number().integer().min(1).max(7).required(),
 
- 
   pricePerSeat: Joi.number().min(1).required(),
 
   notes: Joi.string().max(1000).allow('', null)
