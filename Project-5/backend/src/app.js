@@ -33,12 +33,6 @@ app.use(express.urlencoded({ extended: true }));
 // Request logging
 app.use(morgan('dev'));
 
-app.use('/drivers', driverRoutes);
-app.use('/vehicles', vehicleRoutes);
-app.use('/ratings', ratingRoutes);
-app.use('/bookings', bookingRoutes);
-
-
 // Health check
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -58,6 +52,7 @@ app.use('/payments', paymentRoutes);
 app.use('/recent-searches', recentSearchesRoutes);
 app.use('/dashboards', dashboardRoutes);
 app.use('/ratings', ratingRoutes);
+app.use('/bookings', bookingRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

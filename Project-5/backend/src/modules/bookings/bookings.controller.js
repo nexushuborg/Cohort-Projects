@@ -84,6 +84,26 @@ const getMyBookings = async (req, res) => {
   }
 };
 
+const getDriverBookings = async (req, res) => {
+  try {
+    const bookings =
+      await service.getDriverBookings(req.user.sub);
+
+    return res.status(200).json({
+      success: true,
+      data: bookings
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      error: {
+        code: error.code || 'INTERNAL_ERROR',
+        message: error.message
+      }
+    });
+  }
+};
+
 const acceptBooking = async (req, res) => {
   try {
     const booking =
@@ -213,6 +233,7 @@ module.exports = {
   createBooking,
   getBookingById,
   getMyBookings,
+  getDriverBookings,
   acceptBooking,
   declineBooking,
   cancelBooking,

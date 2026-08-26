@@ -13,11 +13,18 @@ router.post(
   controller.createBooking
 );
 
-// Get my bookings
+// Get rider's bookings
 router.get(
-  '/',
+  '/my',
   authenticateToken,
   controller.getMyBookings
+);
+
+// Get driver's bookings
+router.get(
+  '/driver',
+  authenticateToken,
+  controller.getDriverBookings
 );
 
 // Get a booking by ID
@@ -28,35 +35,35 @@ router.get(
 );
 
 // Accept a booking
-router.patch(
+router.post(
   '/:id/accept',
   authenticateToken,
   controller.acceptBooking
 );
 
 // Decline a booking
-router.patch(
+router.post(
   '/:id/decline',
   authenticateToken,
   controller.declineBooking
 );
 
 // Cancel a booking
-router.patch(
+router.post(
   '/:id/cancel',
   authenticateToken,
   controller.cancelBooking
 );
 
 // Start a trip
-router.patch(
+router.post(
   '/:id/start',
   authenticateToken,
   controller.startTrip
 );
 
 // Complete a trip
-router.patch(
+router.post(
   '/:id/complete',
   authenticateToken,
   controller.completeTrip
