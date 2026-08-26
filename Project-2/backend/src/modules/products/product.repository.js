@@ -42,11 +42,17 @@ const findAll = async ({ page = 1, limit = 20, status, storeId, categoryId } = {
     query = query.where('category_id', categoryId);
   }
 
-  const countQuery = query.clone().count('* as total').first();
-
   const offset = (page - 1) * limit;
   const items = await query.orderBy('created_at', 'desc').limit(limit).offset(offset);
-  const { total } = await countQuery;
+  const countResult = await db(TABLE)
+    .count('* as total')
+    .modify((qb) => {
+      if (status) qb.where('status', status);
+      if (storeId) qb.where('store_id', storeId);
+      if (categoryId) qb.where('category_id', categoryId);
+    })
+    .first();
+  const total = Number(countResult.total);
 
   return {
     items,
@@ -64,11 +70,11 @@ const findAll = async ({ page = 1, limit = 20, status, storeId, categoryId } = {
  */
 const findByStoreId = async (storeId, { page = 1, limit = 20 } = {}) => {
   let query = db(TABLE).where('store_id', storeId).select('*');
-  const countQuery = query.clone().count('* as total').first();
 
   const offset = (page - 1) * limit;
   const items = await query.orderBy('created_at', 'desc').limit(limit).offset(offset);
-  const { total } = await countQuery;
+  const countResult = await db(TABLE).where('store_id', storeId).count('* as total').first();
+  const total = Number(countResult.total);
 
   return {
     items,
