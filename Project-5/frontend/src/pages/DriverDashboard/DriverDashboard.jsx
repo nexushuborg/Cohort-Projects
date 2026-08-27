@@ -55,7 +55,7 @@ export default function DriverDashboard() {
 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>${formatCurrency(data?.totalEarnings)}</div>
+          <div className={styles.statValue}>{formatCurrency(data?.totalEarnings)}</div>
           <div className={styles.statLabel}>Total Earnings</div>
         </div>
         <div className={styles.statCard}>

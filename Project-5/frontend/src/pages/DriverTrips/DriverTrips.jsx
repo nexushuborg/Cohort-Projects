@@ -6,7 +6,7 @@ import Button from '../../components/Button/Button';
 import Modal from '../../components/Modal/Modal';
 import Spinner from '../../components/Spinner/Spinner';
 import { Textarea } from '../../components/Input/Input';
-import { formatDateSafe } from '../../utils/format';
+import { formatDateSafe, formatRupees } from '../../utils/format';
 import styles from './DriverTrips.module.css';
 
 // Helpers to safely resolve snake_case (PostgreSQL) or camelCase (JS) fields
@@ -17,10 +17,26 @@ const tripSeatsAvail = (t) => t.available_seats ?? t.availableSeats ?? t.total_s
 const tripSeatsTotal = (t) => t.total_seats ?? t.totalSeats ?? 0;
 const tripPrice = (t) => t.price_per_seat ?? t.pricePerSeat ?? 0;
 
+// Booking field accessors
+const bkRiderName = (b) => b.rider_name || b.riderName || b.rider?.name || 'Rider';
+const bkOrigin = (b) => b.origin_city || b.originCity || b.ride?.origin_city || b.ride?.originCity || 'Origin';
+const bkDest = (b) => b.destination_city || b.destinationCity || b.ride?.destination_city || b.ride?.destinationCity || 'Destination';
+const bkSeats = (b) => b.seats_booked ?? b.seatsBooked ?? 1;
+const bkAmount = (b) => b.total_amount ?? b.totalAmount ?? b.amount ?? 0;
+
 export default function DriverTrips() {
   const navigate = useNavigate();
+
+  // — Trips State —
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // — Booking Requests State —
+  const [bookings, setBookings] = useState([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [bookingTab, setBookingTab] = useState('requested');
+
+  // — Rating Modal State —
   const [ratingModal, setRatingModal] = useState({ open: false, booking: null });
   const [ratingValue, setRatingValue] = useState(0);
   const [ratingText, setRatingText] = useState('');
@@ -28,6 +44,7 @@ export default function DriverTrips() {
 
   useEffect(() => {
     fetchTrips();
+    fetchBookings();
   }, []);
 
   const fetchTrips = async () => {
@@ -44,19 +61,34 @@ export default function DriverTrips() {
     }
   };
 
-  const handleAccept = async (bookingId) => {
+  const fetchBookings = async () => {
+    setBookingsLoading(true);
+    try {
+      const { data } = await bookingAPI.getMyDriver();
+      if (data.success) {
+        setBookings(Array.isArray(data.data) ? data.data : data.data?.items || []);
+      }
+    } catch {
+      setBookings([]);
+    } finally {
+      setBookingsLoading(false);
+    }
+  };
+
+  const handleAcceptBooking = async (bookingId) => {
     try {
       await bookingAPI.accept(bookingId);
+      fetchBookings();
       fetchTrips();
     } catch {
       // handle
     }
   };
 
-  const handleDecline = async (bookingId) => {
+  const handleDeclineBooking = async (bookingId) => {
     try {
       await bookingAPI.decline(bookingId);
-      fetchTrips();
+      fetchBookings();
     } catch {
       // handle
     }
@@ -86,6 +118,7 @@ export default function DriverTrips() {
       await bookingAPI.complete(bookingId);
       setRatingModal({ open: true, booking: { id: bookingId } });
       fetchTrips();
+      fetchBookings();
     } catch {
       // handle
     }
@@ -110,13 +143,23 @@ export default function DriverTrips() {
     }
   };
 
+  // Filter bookings by tab
+  const filteredBookings = bookings.filter((b) => {
+    if (bookingTab === 'requested') return b.status === 'requested';
+    if (bookingTab === 'accepted') return b.status === 'accepted';
+    if (bookingTab === 'completed') return b.status === 'completed' || b.status === 'declined';
+    return true;
+  });
+
   return (
     <div className={styles.container}>
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
         <h1 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800 }}>My Trips</h1>
         <Button onClick={() => navigate('/post-ride')}>Post New Ride</Button>
       </div>
 
+      {/* Trips Section */}
       {loading ? (
         <Spinner />
       ) : trips.length === 0 ? (
@@ -144,26 +187,29 @@ export default function DriverTrips() {
               <div className={styles.tripMeta}>
                 <span>{formatDateSafe(tripDeparture(trip))}</span>
                 <span>{tripSeatsAvail(trip)} seat{tripSeatsAvail(trip) !== 1 ? 's' : ''} available</span>
-                <span>${tripPrice(trip)}/seat</span>
+                <span>{formatRupees(tripPrice(trip))}/seat</span>
               </div>
 
-              {/* Booking Requests */}
+              {/* Inline Booking Requests on this trip */}
               {trip.bookings && trip.bookings.length > 0 && (
                 <div className={styles.bookingsSection}>
                   <div className={styles.bookingsTitle}>Booking Requests</div>
                   {trip.bookings.map((booking) => (
                     <div key={booking.id} className={styles.bookingRequest}>
                       <div>
-                        <div className={styles.bookingRider}>{booking.rider?.name || 'Rider'}</div>
+                        <div className={styles.bookingRider}>{bkRiderName(booking)}</div>
                         <div className={styles.bookingInfo}>
-                          {booking.seatsBooked} seat(s) · ${booking.totalAmount} ·{' '}
+                          {bkSeats(booking)} seat(s) · {formatRupees(bkAmount(booking))} ·{' '}
                           <Badge status={booking.status} variant="info">{booking.status}</Badge>
                         </div>
+                        {booking.message && (
+                          <div className={styles.bookingMessage}>"{booking.message}"</div>
+                        )}
                       </div>
                       {booking.status === 'requested' && (
                         <div className={styles.bookingActions}>
-                          <Button size="sm" onClick={() => handleAccept(booking.id)}>Accept</Button>
-                          <Button size="sm" variant="danger" onClick={() => handleDecline(booking.id)}>Decline</Button>
+                          <Button size="sm" onClick={() => handleAcceptBooking(booking.id)}>Accept</Button>
+                          <Button size="sm" variant="danger" onClick={() => handleDeclineBooking(booking.id)}>Decline</Button>
                         </div>
                       )}
                     </div>
@@ -195,6 +241,76 @@ export default function DriverTrips() {
           ))}
         </div>
       )}
+
+      {/* ============================== */}
+      {/* Booking Requests Panel         */}
+      {/* ============================== */}
+      <div style={{ marginTop: 'var(--space-10)' }}>
+        <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, marginBottom: 'var(--space-4)' }}>
+          Booking Requests
+        </h2>
+
+        {/* Tabs */}
+        <div className={styles.tabs}>
+          {[
+            { key: 'requested', label: 'Pending' },
+            { key: 'accepted', label: 'Accepted' },
+            { key: 'completed', label: 'Completed / Declined' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              className={[styles.tab, bookingTab === tab.key ? styles.tabActive : ''].filter(Boolean).join(' ')}
+              onClick={() => setBookingTab(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {bookingsLoading ? (
+          <Spinner />
+        ) : filteredBookings.length === 0 ? (
+          <div className={styles.emptyBookings}>
+            <p>No {bookingTab === 'requested' ? 'pending' : bookingTab} requests yet.</p>
+          </div>
+        ) : (
+          <div className={styles.bookingList}>
+            {filteredBookings.map((booking) => (
+              <div key={booking.id} className={styles.bookingCard}>
+                <div className={styles.bookingCardHeader}>
+                  <div className={styles.bookingCardRider}>
+                    <div className={styles.riderAvatar}>{bkRiderName(booking).charAt(0)}</div>
+                    <div>
+                      <div className={styles.riderName}>{bkRiderName(booking)}</div>
+                      <div className={styles.riderRoute}>{bkOrigin(booking)} → {bkDest(booking)}</div>
+                    </div>
+                  </div>
+                  <Badge status={booking.status}>{booking.status}</Badge>
+                </div>
+
+                <div className={styles.bookingCardBody}>
+                  <span>{bkSeats(booking)} seat(s) requested</span>
+                  <span>{formatRupees(bkAmount(booking))}</span>
+                  {booking.ride?.departure_at || booking.ride?.departureAt ? (
+                    <span>{formatDateSafe(booking.ride?.departure_at || booking.ride?.departureAt)}</span>
+                  ) : null}
+                </div>
+
+                {booking.message && (
+                  <div className={styles.bookingCardMessage}>"{booking.message}"</div>
+                )}
+
+                {booking.status === 'requested' && (
+                  <div className={styles.bookingCardActions}>
+                    <Button size="sm" onClick={() => handleAcceptBooking(booking.id)}>Accept</Button>
+                    <Button size="sm" variant="danger" onClick={() => handleDeclineBooking(booking.id)}>Decline</Button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Rating Modal */}
       <Modal

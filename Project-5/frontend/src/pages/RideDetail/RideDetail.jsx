@@ -8,7 +8,7 @@ import Badge from '../../components/Badge/Badge';
 import Modal from '../../components/Modal/Modal';
 import Spinner from '../../components/Spinner/Spinner';
 import RoutePreview from '../../components/RoutePreview/RoutePreview';
-import { formatDateSafe } from '../../utils/format';
+import { formatDateSafe, formatRupees } from '../../utils/format';
 import styles from './RideDetail.module.css';
 
 export default function RideDetail() {
@@ -150,7 +150,7 @@ export default function RideDetail() {
       {ride.status === 'active' && ride.availableSeats > 0 && (
         <div className={styles.bookSection}>
           <div className={styles.priceHighlight}>
-            ${ride.pricePerSeat} <span className={styles.priceSubtext}>per seat</span>
+            {formatRupees(ride.pricePerSeat)} <span className={styles.priceSubtext}>per seat</span>
           </div>
           {isAuthenticated ? (
             <Button fullWidth onClick={() => setShowBookingModal(true)}>
@@ -177,7 +177,7 @@ export default function RideDetail() {
       >
         <div style={{ marginBottom: 'var(--space-4)' }}>
           <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, marginBottom: 'var(--space-2)' }}>
-            ${ride.pricePerSeat}
+            {formatRupees(ride.pricePerSeat)}
           </div>
           <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
             {ride.originCity} → {ride.destinationCity}
@@ -201,7 +201,7 @@ export default function RideDetail() {
           onChange={(e) => setMessage(e.target.value)}
         />
         <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-3)' }}>
-          Total: <strong>${(Number(ride.pricePerSeat || 0) * parseInt(seatsToBook, 10)).toFixed(2)}</strong>
+          Total: <strong>{formatRupees(Number(ride.pricePerSeat || 0) * parseInt(seatsToBook, 10))}</strong>
         </div>
       </Modal>
     </div>

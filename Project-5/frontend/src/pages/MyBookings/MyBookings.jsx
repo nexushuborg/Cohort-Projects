@@ -6,8 +6,15 @@ import Button from '../../components/Button/Button';
 import Modal from '../../components/Modal/Modal';
 import { Textarea } from '../../components/Input/Input';
 import Spinner from '../../components/Spinner/Spinner';
-import { formatDateSafe } from '../../utils/format';
+import { formatDateSafe, formatRupees } from '../../utils/format';
 import styles from './MyBookings.module.css';
+
+// Booking field accessors with snake_case / camelCase fallbacks
+const bkOrigin = (b) => b.origin_city || b.originCity || b.ride?.origin_city || b.ride?.originCity || 'Origin';
+const bkDest = (b) => b.destination_city || b.destinationCity || b.ride?.destination_city || b.ride?.destinationCity || 'Destination';
+const bkDeparture = (b) => b.departure_at || b.departureAt || b.ride?.departure_at || b.ride?.departureAt;
+const bkSeats = (b) => b.seats_booked ?? b.seatsBooked ?? 1;
+const bkAmount = (b) => b.total_amount ?? b.totalAmount ?? b.amount ?? 0;
 
 export default function MyBookings() {
   const navigate = useNavigate();
@@ -98,7 +105,7 @@ export default function MyBookings() {
         <div className={styles.emptyState}>
           <h3>No bookings yet</h3>
           <p>Search for rides to get started.</p>
-          <Button onClick={() => navigate('/search')} style={{ marginTop: 'var(--space-4)' }}>
+          <Button onClick={() => navigate('/')} style={{ marginTop: 'var(--space-4)' }}>
             Find Rides
           </Button>
         </div>
@@ -108,16 +115,16 @@ export default function MyBookings() {
             <div key={booking.id} className={styles.bookingCard}>
               <div className={styles.bookingHeader}>
                 <span className={styles.routeText}>
-                  {booking.ride?.originCity || 'Origin'} → {booking.ride?.destinationCity || 'Dest'}
+                  {bkOrigin(booking)} → {bkDest(booking)}
                 </span>
                 <Badge status={booking.status}>{booking.status}</Badge>
               </div>
               <div className={styles.bookingMeta}>
-                {booking.ride?.departureAt && (
-                  <span>{formatDateSafe(booking.ride?.departureAt)}</span>
+                {bkDeparture(booking) && (
+                  <span>{formatDateSafe(bkDeparture(booking))}</span>
                 )}
-                <span>{booking.seatsBooked} seat{booking.seatsBooked > 1 ? 's' : ''}</span>
-                <span>${booking.totalAmount}</span>
+                <span>{bkSeats(booking)} seat{bkSeats(booking) > 1 ? 's' : ''}</span>
+                <span>{formatRupees(bkAmount(booking))}</span>
               </div>
               <div className={styles.bookingFooter}>
                 {booking.status === 'requested' && (

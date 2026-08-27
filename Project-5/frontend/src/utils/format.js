@@ -19,9 +19,18 @@ export const formatDistanceSafe = (dateVal) => {
 };
 
 /**
- * Safely format a monetary value to 2 decimal places. Handles strings, null, NaN.
+ * Safely format a monetary value to 2 decimal places with ₹ prefix.
+ * Handles strings, null, NaN.
  */
 export const formatCurrency = (val) => {
   const num = parseFloat(val);
-  return isNaN(num) ? '0.00' : num.toFixed(2);
+  return isNaN(num) ? '₹0.00' : `₹${num.toFixed(2)}`;
+};
+
+/**
+ * Format a value as Indian Rupees. Alias for clarity in currency-heavy contexts.
+ */
+export const formatRupees = (val) => {
+  const num = parseFloat(val);
+  return isNaN(num) ? '₹0.00' : `₹${num.toFixed(2)}`;
 };

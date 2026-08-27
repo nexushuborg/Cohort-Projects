@@ -3,7 +3,7 @@ import { walletAPI, extractError } from '../../services/api';
 import { Input } from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import Spinner from '../../components/Spinner/Spinner';
-import { formatDateSafe } from '../../utils/format';
+import { formatDateSafe, formatRupees } from '../../utils/format';
 import styles from './Wallet.module.css';
 
 export default function Wallet() {
@@ -93,15 +93,15 @@ export default function Wallet() {
 
       <div className={styles.statsRow}>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>${Number(wallet?.balance || 0).toFixed(2)}</div>
+          <div className={styles.statValue}>{formatRupees(wallet?.balance)}</div>
           <div className={styles.statLabel}>Balance</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>${Number(wallet?.totalEarned || 0).toFixed(2)}</div>
+          <div className={styles.statValue}>{formatRupees(wallet?.totalEarned)}</div>
           <div className={styles.statLabel}>Total Earned</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>${Number(wallet?.totalWithdrawn || 0).toFixed(2)}</div>
+          <div className={styles.statValue}>{formatRupees(wallet?.totalWithdrawn)}</div>
           <div className={styles.statLabel}>Total Withdrawn</div>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function Wallet() {
           <h3 className={styles.actionTitle}>Top Up Balance</h3>
           <form onSubmit={handleTopUp}>
             <Input
-              label="Amount ($)"
+              label="Amount (₹)"
               name="topupAmount"
               type="number"
               min="1"
@@ -127,7 +127,7 @@ export default function Wallet() {
           <h3 className={styles.actionTitle}>Withdraw Funds</h3>
           <form onSubmit={handleWithdraw}>
             <Input
-              label="Amount ($)"
+              label="Amount (₹)"
               name="withdrawAmount"
               type="number"
               min="1"
@@ -161,7 +161,7 @@ export default function Wallet() {
                   className={[styles.transactionAmount, tx.type?.toLowerCase() === 'credit' ? styles.amountCredit : styles.amountDebit]
                   .filter(Boolean).join(' ')}
               >
-                {tx.type?.toLowerCase() === 'credit' ? '+' : '-'}${Number(tx.amount || 0).toFixed(2)}
+                {tx.type?.toLowerCase() === 'credit' ? '+' : '-'}{formatRupees(tx.amount)}
               </span>
             </div>
           ))}

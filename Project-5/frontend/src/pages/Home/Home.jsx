@@ -9,7 +9,7 @@ import Badge from '../../components/Badge/Badge';
 import Modal from '../../components/Modal/Modal';
 import { Textarea } from '../../components/Input/Input';
 import { useAuth } from '../../context/AuthContext';
-import { formatDateSafe, formatCurrency } from '../../utils/format';
+import { formatDateSafe, formatCurrency, formatRupees } from '../../utils/format';
 import styles from './Home.module.css';
 
 // Helpers to safely resolve snake_case (PostgreSQL) or camelCase (JS) fields
@@ -370,7 +370,7 @@ export default function Home() {
                       )}
                     </div>
                     <div className={styles.ridePrice}>
-                      <div className={styles.priceValue}>${ridePrice(ride)}</div>
+                      <div className={styles.priceValue}>{formatRupees(ridePrice(ride))}</div>
                       <div className={styles.priceLabel}>per seat</div>
                       <button
                         className={styles.bookBtn}
@@ -447,7 +447,7 @@ export default function Home() {
             {/* Dynamic total */}
             <div className={styles.bookingTotal}>
               <span>Total</span>
-              <span className={styles.bookingTotalValue}>${formatCurrency(totalBookingPrice)}</span>
+              <span className={styles.bookingTotalValue}>{formatRupees(totalBookingPrice)}</span>
             </div>
 
             {/* Message to driver */}
