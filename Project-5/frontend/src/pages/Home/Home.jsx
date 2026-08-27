@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
 import { rideAPI, recentSearchAPI } from '../../services/api';
 import { Input } from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
@@ -8,6 +7,7 @@ import Spinner from '../../components/Spinner/Spinner';
 import RoutePreview from '../../components/RoutePreview/RoutePreview';
 import Badge from '../../components/Badge/Badge';
 import { useAuth } from '../../context/AuthContext';
+import { formatDateSafe } from '../../utils/format';
 import styles from './Home.module.css';
 
 export default function Home() {
@@ -277,7 +277,7 @@ export default function Home() {
                       </div>
                       <div className={styles.rideMeta}>
                         <span className={styles.metaItem}>
-                          📅 {format(new Date(ride.departureAt), 'MMM d, h:mm a')}
+                          📅 {formatDateSafe(ride.departureAt)}
                         </span>
                         <span className={styles.metaItem}>
                           💺 {ride.availableSeats} seat{ride.availableSeats !== 1 ? 's' : ''} left

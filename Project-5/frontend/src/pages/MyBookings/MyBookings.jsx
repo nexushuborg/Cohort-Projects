@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
 import { bookingAPI, ratingAPI } from '../../services/api';
 import Badge from '../../components/Badge/Badge';
 import Button from '../../components/Button/Button';
 import Modal from '../../components/Modal/Modal';
 import { Textarea } from '../../components/Input/Input';
 import Spinner from '../../components/Spinner/Spinner';
+import { formatDateSafe } from '../../utils/format';
 import styles from './MyBookings.module.css';
 
 export default function MyBookings() {
@@ -114,7 +114,7 @@ export default function MyBookings() {
               </div>
               <div className={styles.bookingMeta}>
                 {booking.ride?.departureAt && (
-                  <span>{format(new Date(booking.ride.departureAt), 'MMM d, h:mm a')}</span>
+                  <span>{formatDateSafe(booking.ride?.departureAt)}</span>
                 )}
                 <span>{booking.seatsBooked} seat{booking.seatsBooked > 1 ? 's' : ''}</span>
                 <span>${booking.totalAmount}</span>

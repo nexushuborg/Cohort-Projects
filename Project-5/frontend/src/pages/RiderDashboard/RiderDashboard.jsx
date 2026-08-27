@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format, formatDistanceToNow } from 'date-fns';
 import { dashboardAPI } from '../../services/api';
 import Badge from '../../components/Badge/Badge';
 import Button from '../../components/Button/Button';
 import Spinner from '../../components/Spinner/Spinner';
+import { formatDateSafe, formatDistanceSafe } from '../../utils/format';
 import styles from './RiderDashboard.module.css';
 
 export default function RiderDashboard() {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
+  const [data, setData] = useState({ upcomingRides: [], pastTrips: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,10 +63,10 @@ export default function RiderDashboard() {
                     {ride.originCity || ride.originAddress} → {ride.destinationCity || ride.destinationAddress}
                   </span>
                   <span className={styles.tripMeta}>
-                    {format(new Date(ride.departureAt), 'MMM d, h:mm a')}
+                    {formatDateSafe(ride.departureAt)}
                   </span>
                   <span className={styles.countdown}>
-                    Departing {formatDistanceToNow(new Date(ride.departureAt), { addSuffix: true })}
+                    Departing {formatDistanceSafe(ride.departureAt)}
                   </span>
                 </div>
                 <Badge status={ride.status}>{ride.status}</Badge>
@@ -91,7 +91,7 @@ export default function RiderDashboard() {
                     {ride.originCity || ride.originAddress} → {ride.destinationCity || ride.destinationAddress}
                   </span>
                   <span className={styles.tripMeta}>
-                    {ride.departureAt ? format(new Date(ride.departureAt), 'MMM d, h:mm a') : ''}
+                    {formatDateSafe(ride.departureAt)}
                   </span>
                 </div>
                 <Badge status="completed">completed</Badge>

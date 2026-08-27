@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
 import { rideAPI, bookingAPI, ratingAPI } from '../../services/api';
 import Badge from '../../components/Badge/Badge';
 import Button from '../../components/Button/Button';
 import Modal from '../../components/Modal/Modal';
 import Spinner from '../../components/Spinner/Spinner';
 import { Input, Textarea } from '../../components/Input/Input';
+import { formatDateSafe } from '../../utils/format';
 import styles from './DriverTrips.module.css';
 
 export default function DriverTrips() {
@@ -120,7 +120,7 @@ export default function DriverTrips() {
                 <Badge status={trip.status}>{trip.status?.replace('_', ' ')}</Badge>
               </div>
               <div className={styles.tripMeta}>
-                <span>{format(new Date(trip.departureAt), 'MMM d, h:mm a')}</span>
+                <span>{formatDateSafe(trip.departureAt)}</span>
                 <span>{trip.availableSeats}/{trip.totalSeats} seats available</span>
                 <span>${trip.pricePerSeat}/seat</span>
               </div>

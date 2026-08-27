@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ModeProvider } from './context/ModeContext';
 import Navbar from './components/Navbar/Navbar';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import { PageLoader } from './components/Spinner/Spinner';
 
 // Pages
@@ -40,6 +41,7 @@ function GuestRoute({ children }) {
 function AppRoutes() {
   return (
     <>
+      <ErrorBoundary>
       <Navbar />
       <main>
         <Routes>
@@ -144,6 +146,7 @@ function AppRoutes() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+      </ErrorBoundary>
     </>
   );
 }

@@ -3,10 +3,17 @@ import { dashboardAPI, driverAPI } from '../../services/api';
 import Badge from '../../components/Badge/Badge';
 import Button from '../../components/Button/Button';
 import Spinner from '../../components/Spinner/Spinner';
+import { formatCurrency } from '../../utils/format';
 import styles from './DriverDashboard.module.css';
 
 export default function DriverDashboard() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState({
+    totalEarnings: 0,
+    totalTrips: 0,
+    averageRating: 0,
+    activeRides: 0,
+    status: 'offline',
+  });
   const [loading, setLoading] = useState(true);
   const [statusLoading, setStatusLoading] = useState(false);
 
@@ -48,15 +55,15 @@ export default function DriverDashboard() {
 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>${data?.totalEarnings?.toFixed(2) || '0.00'}</div>
+          <div className={styles.statValue}>${formatCurrency(data?.totalEarnings)}</div>
           <div className={styles.statLabel}>Total Earnings</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>{data?.totalTrips || 0}</div>
+          <div className={styles.statValue}>{Number(data?.totalTrips || 0)}</div>
           <div className={styles.statLabel}>Trips Completed</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>{data?.averageRating?.toFixed(1) || '—'}</div>
+          <div className={styles.statValue}>{Number(data?.averageRating || 0).toFixed(1) || '—'}</div>
           <div className={styles.statLabel}>Average Rating</div>
         </div>
         <div className={styles.statCard}>

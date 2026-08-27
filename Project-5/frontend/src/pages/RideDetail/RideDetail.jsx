@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
 import { rideAPI, bookingAPI, extractError } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { Input, Select } from '../../components/Input/Input';
@@ -9,6 +8,7 @@ import Badge from '../../components/Badge/Badge';
 import Modal from '../../components/Modal/Modal';
 import Spinner from '../../components/Spinner/Spinner';
 import RoutePreview from '../../components/RoutePreview/RoutePreview';
+import { formatDateSafe } from '../../utils/format';
 import styles from './RideDetail.module.css';
 
 export default function RideDetail() {
@@ -113,7 +113,7 @@ export default function RideDetail() {
       <div className={styles.detailCard}>
         <div className={styles.detailRow}>
           <span className={styles.detailLabel}>Departure</span>
-          <span className={styles.detailValue}>{format(new Date(ride.departureAt), 'MMM d, yyyy · h:mm a')}</span>
+          <span className={styles.detailValue}>{formatDateSafe(ride.departureAt, 'MMM d, yyyy · h:mm a')}</span>
         </div>
         <div className={styles.detailRow}>
           <span className={styles.detailLabel}>Available Seats</span>
@@ -201,7 +201,7 @@ export default function RideDetail() {
           onChange={(e) => setMessage(e.target.value)}
         />
         <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-3)' }}>
-          Total: <strong>${(ride.pricePerSeat * parseInt(seatsToBook, 10)).toFixed(2)}</strong>
+          Total: <strong>${(Number(ride.pricePerSeat || 0) * parseInt(seatsToBook, 10)).toFixed(2)}</strong>
         </div>
       </Modal>
     </div>

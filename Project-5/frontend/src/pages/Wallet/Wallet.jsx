@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
 import { walletAPI, extractError } from '../../services/api';
 import { Input } from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import Spinner from '../../components/Spinner/Spinner';
+import { formatDateSafe } from '../../utils/format';
 import styles from './Wallet.module.css';
 
 export default function Wallet() {
@@ -154,7 +154,7 @@ export default function Wallet() {
               <div className={styles.transactionInfo}>
                 <span className={styles.transactionDesc}>{tx.description || tx.type}</span>
                 <span className={styles.transactionDate}>
-                  {tx.created_at ? format(new Date(tx.created_at), 'MMM d, yyyy · h:mm a') : ''}
+                  {formatDateSafe(tx.created_at, 'MMM d, yyyy · h:mm a')}
                 </span>
               </div>
               <span
