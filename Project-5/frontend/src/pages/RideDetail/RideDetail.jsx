@@ -80,10 +80,10 @@ export default function RideDetail() {
       <button className={styles.backBtn} onClick={() => navigate(-1)}>← Back</button>
 
       <RoutePreview
-        originLat={ride.originLat}
-        originLng={ride.originLng}
-        destinationLat={ride.destinationLat}
-        destinationLng={ride.destinationLng}
+        originLat={ride.origin_lat || ride.originLat}
+        originLng={ride.origin_lng || ride.originLng}
+        destinationLat={ride.destination_lat || ride.destinationLat}
+        destinationLng={ride.destination_lng || ride.destinationLng}
         variant="detail"
       />
 

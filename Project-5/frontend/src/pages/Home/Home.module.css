@@ -341,6 +341,10 @@
 .ridePrice {
   text-align: right;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
 }
 
 .priceValue {
@@ -353,6 +357,138 @@
 .priceLabel {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
+}
+
+/* — Book Ride Button — */
+.bookBtn {
+  margin-top: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+}
+
+.bookBtn:hover {
+  opacity: 0.85;
+  transform: scale(1.02);
+}
+
+.bookBtn:active {
+  transform: scale(0.98);
+}
+
+/* — Booking Modal — */
+.bookingModalBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.bookingSummary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+}
+
+.bookingRoute {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+}
+
+.bookingDate {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.bookingField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.bookingLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.bookingInput {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  background: var(--bg-primary);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.bookingInput:focus {
+  border-color: var(--color-black);
+}
+
+.bookingHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.bookingTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border-light);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+.bookingTotalValue {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-text-primary);
+}
+
+.bookingTextarea {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  background: var(--bg-primary);
+  color: var(--color-text-primary);
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color var(--transition-fast);
+}
+
+.bookingTextarea:focus {
+  border-color: var(--color-black);
+}
+
+.bookingError {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-danger-light, #FDECEB);
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.bookingSuccess {
+  padding: var(--space-3) var(--space-4);
+  background-color: #E6F9EF;
+  color: #06C167;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
 }
 
 /* — Empty State — */

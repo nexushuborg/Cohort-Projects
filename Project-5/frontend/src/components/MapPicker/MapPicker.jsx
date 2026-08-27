@@ -12,6 +12,22 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+// — Coordinate sanitizers —
+const safeLat = (val) => {
+  const num = parseFloat(val);
+  return !isNaN(num) && num >= -90 && num <= 90 ? num : null;
+};
+
+const safeLng = (val) => {
+  const num = parseFloat(val);
+  return !isNaN(num) && num >= -180 && num <= 180 ? num : null;
+};
+
+const fmtCoord = (val) => {
+  const num = parseFloat(val);
+  return !isNaN(num) ? num.toFixed(4) : '—';
+};
+
 // Custom pin icons
 function createPinIcon(color) {
   const bg = color === 'origin' ? '#06C167' : '#E11900';
@@ -32,6 +48,8 @@ function createPinIcon(color) {
 
 const originIcon = createPinIcon('origin');
 const destIcon = createPinIcon('dest');
+
+const MAP_CENTER = [20.5937, 78.9629]; // Center of India
 
 // Component that listens for map clicks and places the correct pin
 function MapClickHandler({ activePin, onPlacePin }) {
@@ -62,7 +80,12 @@ export default function MapPicker({
 }) {
   const [activePin, setActivePin] = useState('origin');
   const [geoLoading, setGeoLoading] = useState(false);
-  const [mapCenter] = useState([20.5937, 78.9629]); // Center of India default
+
+  // Sanitize incoming props to safe floats
+  const safeOriginLat = safeLat(originLat) ?? 19.076;
+  const safeOriginLng = safeLng(originLng) ?? 72.8777;
+  const safeDestLat = safeLat(destLat) ?? 18.5204;
+  const safeDestLng = safeLng(destLng) ?? 73.8567;
 
   const handlePlacePin = useCallback((pin, lat, lng) => {
     const rounded = (v) => Math.round(v * 10000) / 10000;
@@ -90,8 +113,8 @@ export default function MapPicker({
     );
   };
 
-  const originPos = [originLat, originLng];
-  const destPos = [destLat, destLng];
+  const originPos = [safeOriginLat, safeOriginLng];
+  const destPos = [safeDestLat, safeDestLng];
 
   return (
     <div className={styles.wrapper}>
@@ -104,8 +127,8 @@ export default function MapPicker({
           </div>
           <div className={styles.mapContainer}>
             <MapContainer
-              center={originLat ? originPos : mapCenter}
-              zoom={originLat ? 13 : 5}
+              center={originPos}
+              zoom={13}
               style={{ width: '100%', height: '100%' }}
               scrollWheelZoom={true}
             >
@@ -137,7 +160,7 @@ export default function MapPicker({
               📡 Use Current Location
             </button>
             <span className={styles.coords}>
-              {originLat.toFixed(4)}, {originLng.toFixed(4)}
+              {fmtCoord(originLat)}, {fmtCoord(originLng)}
             </span>
           </div>
         </div>
@@ -150,8 +173,8 @@ export default function MapPicker({
           </div>
           <div className={styles.mapContainer}>
             <MapContainer
-              center={destLat ? destPos : mapCenter}
-              zoom={destLat ? 13 : 5}
+              center={destPos}
+              zoom={13}
               style={{ width: '100%', height: '100%' }}
               scrollWheelZoom={true}
             >
@@ -182,7 +205,7 @@ export default function MapPicker({
               📡 Use Current Location
             </button>
             <span className={styles.coords}>
-              {destLat.toFixed(4)}, {destLng.toFixed(4)}
+              {fmtCoord(destLat)}, {fmtCoord(destLng)}
             </span>
           </div>
         </div>

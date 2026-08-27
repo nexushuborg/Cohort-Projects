@@ -3,6 +3,17 @@ import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import styles from './RoutePreview.module.css';
 
+// — Coordinate sanitizers —
+const safeLat = (val) => {
+  const num = parseFloat(val);
+  return !isNaN(num) && num >= -90 && num <= 90 ? num : null;
+};
+
+const safeLng = (val) => {
+  const num = parseFloat(val);
+  return !isNaN(num) && num >= -180 && num <= 180 ? num : null;
+};
+
 function createSmallPin(color) {
   const bg = color === 'origin' ? '#06C167' : '#E11900';
   const label = color === 'origin' ? 'P' : 'D';
@@ -30,46 +41,51 @@ export default function RoutePreview({
   variant = 'card', // 'card' | 'detail'
   className = '',
 }) {
-  const hasCoords = originLat && originLng && destinationLat && destinationLng;
+  // Sanitize all four coordinates to safe floats or null
+  const oLat = safeLat(originLat);
+  const oLng = safeLng(originLng);
+  const dLat = safeLat(destinationLat);
+  const dLng = safeLng(destinationLng);
+
+  const hasValidRoute =
+    oLat !== null &&
+    oLng !== null &&
+    dLat !== null &&
+    dLng !== null;
 
   // Compute bounds to fit both markers
   const bounds = useMemo(() => {
-    if (!hasCoords) return null;
+    if (!hasValidRoute) return null;
     return [
-      [originLat, originLng],
-      [destinationLat, destinationLng],
+      [oLat, oLng],
+      [dLat, dLng],
     ];
-  }, [originLat, originLng, destinationLat, destinationLng, hasCoords]);
+  }, [oLat, oLng, dLat, dLng, hasValidRoute]);
 
   const center = useMemo(() => {
-    if (!hasCoords) return [20.5937, 78.9629]; // India center
+    if (!hasValidRoute) return [20.5937, 78.9629]; // India center
     return [
-      (originLat + destinationLat) / 2,
-      (originLng + destinationLng) / 2,
+      (oLat + dLat) / 2,
+      (oLng + dLng) / 2,
     ];
-  }, [originLat, originLng, destinationLat, destinationLng, hasCoords]);
+  }, [oLat, oLng, dLat, dLng, hasValidRoute]);
 
   const zoom = useMemo(() => {
-    if (!hasCoords) return 5;
-    // Calculate rough distance to determine zoom level
+    if (!hasValidRoute) return 5;
     const dist = Math.sqrt(
-      Math.pow(originLat - destinationLat, 2) + Math.pow(originLng - destinationLng, 2)
+      Math.pow(oLat - dLat, 2) + Math.pow(oLng - dLng, 2)
     );
     if (dist > 5) return 5;
     if (dist > 2) return 7;
     if (dist > 0.5) return 10;
     return 12;
-  }, [originLat, originLng, destinationLat, destinationLng, hasCoords]);
+  }, [oLat, oLng, dLat, dLng, hasValidRoute]);
 
-  if (!hasCoords) {
+  if (!hasValidRoute) {
     return (
       <div className={`${variant === 'card' ? styles.mapCard : styles.mapDetail} ${className}`}>
-        <div style={{
-          width: '100%', height: '100%', display: 'flex',
-          alignItems: 'center', justifyContent: 'center',
-          background: '#F6F6F6', color: '#888', fontSize: '12px',
-        }}>
-          No route data
+        <div className={styles.noMapFallback}>
+          <span>📍 Route details available upon booking</span>
         </div>
       </div>
     );
@@ -91,17 +107,17 @@ export default function RoutePreview({
           attribution='&copy; OSM'
         />
         <Marker
-          position={[originLat, originLng]}
+          position={[oLat, oLng]}
           icon={originIcon}
         />
         <Marker
-          position={[destinationLat, destinationLng]}
+          position={[dLat, dLng]}
           icon={destIcon}
         />
         <Polyline
           positions={[
-            [originLat, originLng],
-            [destinationLat, destinationLng],
+            [oLat, oLng],
+            [dLat, dLng],
           ]}
           pathOptions={{
             color: '#000000',

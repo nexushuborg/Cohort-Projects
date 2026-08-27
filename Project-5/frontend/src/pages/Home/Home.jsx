@@ -1,14 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { rideAPI, recentSearchAPI } from '../../services/api';
+import { rideAPI, bookingAPI, recentSearchAPI, extractError } from '../../services/api';
 import { Input } from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import Spinner from '../../components/Spinner/Spinner';
 import RoutePreview from '../../components/RoutePreview/RoutePreview';
 import Badge from '../../components/Badge/Badge';
+import Modal from '../../components/Modal/Modal';
+import { Textarea } from '../../components/Input/Input';
 import { useAuth } from '../../context/AuthContext';
-import { formatDateSafe } from '../../utils/format';
+import { formatDateSafe, formatCurrency } from '../../utils/format';
 import styles from './Home.module.css';
+
+// Helpers to safely resolve snake_case (PostgreSQL) or camelCase (JS) fields
+const rideOrigin = (r) => r.origin_city || r.originCity || r.originAddress || 'Origin';
+const rideDest = (r) => r.destination_city || r.destinationCity || r.destinationAddress || 'Destination';
+const rideDeparture = (r) => r.departure_at || r.departureAt;
+const rideSeats = (r) => r.available_seats ?? r.availableSeats ?? 0;
+const ridePrice = (r) => r.price_per_seat ?? r.pricePerSeat ?? 0;
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
@@ -25,6 +34,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [sortBy, setSortBy] = useState('departure_at');
+
+  // — Booking Modal State —
+  const [bookingModal, setBookingModal] = useState({ open: false, ride: null });
+  const [seatsToBook, setSeatsToBook] = useState(1);
+  const [bookingMessage, setBookingMessage] = useState('');
+  const [submittingBooking, setSubmittingBooking] = useState(false);
+  const [bookingError, setBookingError] = useState('');
+  const [bookingSuccess, setBookingSuccess] = useState('');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -54,8 +71,10 @@ export default function Home() {
 
     try {
       const params = {};
-      if (form.origin) params.origin = form.origin;
-      if (form.destination) params.destination = form.destination;
+      const trimmedOrigin = form.origin.trim();
+      const trimmedDest = form.destination.trim();
+      if (trimmedOrigin) params.origin = trimmedOrigin;
+      if (trimmedDest) params.destination = trimmedDest;
       if (form.date) params.date = form.date;
       if (form.seats) params.seats = form.seats;
       params.sortBy = sortBy;
@@ -66,11 +85,11 @@ export default function Home() {
         setResults(data.data?.items || data.data || []);
       }
 
-      if (isAuthenticated && form.origin && form.destination) {
+      if (isAuthenticated && trimmedOrigin && trimmedDest) {
         try {
           await recentSearchAPI.create({
-            origin: form.origin,
-            destination: form.destination,
+            origin: trimmedOrigin,
+            destination: trimmedDest,
             searchDate: form.date || undefined,
           });
           loadRecentSearches();
@@ -105,10 +124,60 @@ export default function Home() {
     }
   };
 
+  // — Booking Handlers —
+  const openBookingModal = (ride, e) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: { pathname: '/' } } });
+      return;
+    }
+    setBookingModal({ open: true, ride });
+    setSeatsToBook(1);
+    setBookingMessage('');
+    setBookingError('');
+    setBookingSuccess('');
+  };
+
+  const closeBookingModal = () => {
+    setBookingModal({ open: false, ride: null });
+    setBookingError('');
+    setBookingSuccess('');
+  };
+
+  const handleBookingSubmit = async () => {
+    const ride = bookingModal.ride;
+    if (!ride) return;
+
+    setSubmittingBooking(true);
+    setBookingError('');
+    setBookingSuccess('');
+
+    try {
+      await bookingAPI.create({
+        rideId: ride.id,
+        seatsBooked: seatsToBook,
+        message: bookingMessage || undefined,
+      });
+      setBookingSuccess('Booking request submitted successfully!');
+      setTimeout(() => {
+        closeBookingModal();
+        navigate('/bookings');
+      }, 1500);
+    } catch (err) {
+      const extracted = extractError(err);
+      setBookingError(extracted.message);
+    } finally {
+      setSubmittingBooking(false);
+    }
+  };
+
   const sortedResults = [...results].sort((a, b) => {
-    if (sortBy === 'price_per_seat') return (a.pricePerSeat || 0) - (b.pricePerSeat || 0);
-    return new Date(a.departureAt) - new Date(b.departureAt);
+    if (sortBy === 'price_per_seat') return (ridePrice(a) || 0) - (ridePrice(b) || 0);
+    return new Date(rideDeparture(a)) - new Date(rideDeparture(b));
   });
+
+  const bookingRide = bookingModal.ride;
+  const totalBookingPrice = bookingRide ? seatsToBook * ridePrice(bookingRide) : 0;
 
   return (
     <div className={styles.page}>
@@ -256,31 +325,31 @@ export default function Home() {
                 >
                   <div className={styles.rideMap}>
                     <RoutePreview
-                      originLat={ride.originLat}
-                      originLng={ride.originLng}
-                      destinationLat={ride.destinationLat}
-                      destinationLng={ride.destinationLng}
+                      originLat={ride.origin_lat || ride.originLat}
+                      originLng={ride.origin_lng || ride.originLng}
+                      destinationLat={ride.destination_lat || ride.destinationLat}
+                      destinationLng={ride.destination_lng || ride.destinationLng}
                       variant="card"
                     />
                   </div>
                   <div className={styles.rideCardBody}>
                     <div className={styles.rideInfo}>
                       <div className={styles.rideRoute}>
-                        <span className={styles.routeFrom}>{ride.originCity || ride.originAddress}</span>
+                        <span className={styles.routeFrom}>{rideOrigin(ride)}</span>
                         <span className={styles.routeArrow}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="5" y1="12" x2="19" y2="12" />
                             <polyline points="12 5 19 12 12 19" />
                           </svg>
                         </span>
-                        <span className={styles.routeTo}>{ride.destinationCity || ride.destinationAddress}</span>
+                        <span className={styles.routeTo}>{rideDest(ride)}</span>
                       </div>
                       <div className={styles.rideMeta}>
                         <span className={styles.metaItem}>
-                          📅 {formatDateSafe(ride.departureAt)}
+                          📅 {formatDateSafe(rideDeparture(ride))}
                         </span>
                         <span className={styles.metaItem}>
-                          💺 {ride.availableSeats} seat{ride.availableSeats !== 1 ? 's' : ''} left
+                          💺 {rideSeats(ride)} seat{rideSeats(ride) !== 1 ? 's' : ''} left
                         </span>
                       </div>
                       {ride.driver && (
@@ -301,8 +370,14 @@ export default function Home() {
                       )}
                     </div>
                     <div className={styles.ridePrice}>
-                      <div className={styles.priceValue}>${ride.pricePerSeat}</div>
+                      <div className={styles.priceValue}>${ridePrice(ride)}</div>
                       <div className={styles.priceLabel}>per seat</div>
+                      <button
+                        className={styles.bookBtn}
+                        onClick={(e) => openBookingModal(ride, e)}
+                      >
+                        Book Ride
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -319,6 +394,85 @@ export default function Home() {
           )}
         </div>
       )}
+
+      {/* Booking Modal */}
+      <Modal
+        isOpen={bookingModal.open}
+        onClose={closeBookingModal}
+        title="Book a Ride"
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeBookingModal}>Cancel</Button>
+            <Button
+              onClick={handleBookingSubmit}
+              loading={submittingBooking}
+              disabled={submittingBooking || !!bookingSuccess}
+            >
+              Confirm &amp; Book Ride
+            </Button>
+          </>
+        }
+      >
+        {bookingRide && (
+          <div className={styles.bookingModalBody}>
+            {/* Ride summary */}
+            <div className={styles.bookingSummary}>
+              <span className={styles.bookingRoute}>
+                {rideOrigin(bookingRide)} → {rideDest(bookingRide)}
+              </span>
+              <span className={styles.bookingDate}>
+                {formatDateSafe(rideDeparture(bookingRide))}
+              </span>
+            </div>
+
+            {/* Seats input */}
+            <div className={styles.bookingField}>
+              <label className={styles.bookingLabel}>Number of Seats</label>
+              <input
+                type="number"
+                className={styles.bookingInput}
+                min={1}
+                max={rideSeats(bookingRide)}
+                value={seatsToBook}
+                onChange={(e) => {
+                  const val = Math.max(1, Math.min(rideSeats(bookingRide), parseInt(e.target.value, 10) || 1));
+                  setSeatsToBook(val);
+                }}
+              />
+              <span className={styles.bookingHint}>
+                {rideSeats(bookingRide)} seat{rideSeats(bookingRide) !== 1 ? 's' : ''} available
+              </span>
+            </div>
+
+            {/* Dynamic total */}
+            <div className={styles.bookingTotal}>
+              <span>Total</span>
+              <span className={styles.bookingTotalValue}>${formatCurrency(totalBookingPrice)}</span>
+            </div>
+
+            {/* Message to driver */}
+            <div className={styles.bookingField}>
+              <label className={styles.bookingLabel}>Message to Driver (optional)</label>
+              <textarea
+                className={styles.bookingTextarea}
+                placeholder="Hi, please confirm pickup spot."
+                rows={3}
+                value={bookingMessage}
+                onChange={(e) => setBookingMessage(e.target.value)}
+                maxLength={500}
+              />
+            </div>
+
+            {/* Status messages */}
+            {bookingError && (
+              <div className={styles.bookingError}>{bookingError}</div>
+            )}
+            {bookingSuccess && (
+              <div className={styles.bookingSuccess}>{bookingSuccess}</div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
