@@ -1,0 +1,125 @@
+.wrapper {
+  margin-bottom: var(--space-4);
+}
+
+.mapLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mapLabel span {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.mapContainer {
+  width: 100%;
+  height: 300px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Ensure Leaflet fills container */
+.mapContainer :global(.leaflet-container) {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-surface);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.useLocationBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.useLocationBtn:hover {
+  border-color: var(--color-black);
+  color: var(--color-text-primary);
+}
+
+.coords {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+/* Custom Leaflet marker overrides */
+.originMarker :global(.leaflet-marker-icon),
+.destMarker :global(.leaflet-marker-icon) {
+  border: none !important;
+  background: none !important;
+}
+
+.pinOrigin,
+.pinDest {
+  width: 28px;
+  height: 28px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.pinOrigin {
+  background-color: var(--color-success);
+}
+
+.pinDest {
+  background-color: var(--color-danger);
+}
+
+.pinOrigin span,
+.pinDest span {
+  transform: rotate(45deg);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dualMapGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .dualMapGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mapContainer {
+    height: 240px;
+  }
+}
