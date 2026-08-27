@@ -2,8 +2,7 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = async function (knex) {
-    
+exports.up = function (knex) {
   return knex.schema.createTable("workspaces", (table) => {
     table
       .uuid("id")
