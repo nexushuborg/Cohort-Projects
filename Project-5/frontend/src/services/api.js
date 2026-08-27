@@ -146,6 +146,9 @@ export const rideAPI = {
   create: (data) => api.post('/rides', data),
   getById: (id) => api.get(`/rides/${id}`),
   search: (params) => api.get('/rides/search', { params }),
+  getMy: () => api.get('/rides/my'),
+  start: (id) => api.post(`/rides/${id}/start`),
+  cancel: (id) => api.post(`/rides/${id}/cancel`),
 };
 
 // ========================

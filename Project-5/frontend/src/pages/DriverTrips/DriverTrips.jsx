@@ -5,9 +5,17 @@ import Badge from '../../components/Badge/Badge';
 import Button from '../../components/Button/Button';
 import Modal from '../../components/Modal/Modal';
 import Spinner from '../../components/Spinner/Spinner';
-import { Input, Textarea } from '../../components/Input/Input';
+import { Textarea } from '../../components/Input/Input';
 import { formatDateSafe } from '../../utils/format';
 import styles from './DriverTrips.module.css';
+
+// Helpers to safely resolve snake_case (PostgreSQL) or camelCase (JS) fields
+const tripOrigin = (t) => t.origin_city || t.originCity || 'Origin';
+const tripDest = (t) => t.destination_city || t.destinationCity || 'Destination';
+const tripDeparture = (t) => t.departure_at || t.departureAt;
+const tripSeatsAvail = (t) => t.available_seats ?? t.availableSeats ?? t.total_seats ?? t.totalSeats ?? 0;
+const tripSeatsTotal = (t) => t.total_seats ?? t.totalSeats ?? 0;
+const tripPrice = (t) => t.price_per_seat ?? t.pricePerSeat ?? 0;
 
 export default function DriverTrips() {
   const navigate = useNavigate();
@@ -25,9 +33,9 @@ export default function DriverTrips() {
   const fetchTrips = async () => {
     setLoading(true);
     try {
-      const { data } = await rideAPI.search({ driver: 'me' });
+      const { data } = await rideAPI.getMy();
       if (data.success) {
-        setTrips(data.data?.items || data.data || []);
+        setTrips(Array.isArray(data.data) ? data.data : data.data?.items || []);
       }
     } catch {
       setTrips([]);
@@ -54,9 +62,19 @@ export default function DriverTrips() {
     }
   };
 
-  const handleStartTrip = async (bookingId) => {
+  const handleStartTrip = async (tripId) => {
     try {
-      await bookingAPI.start(bookingId);
+      await rideAPI.start(tripId);
+      fetchTrips();
+    } catch {
+      // handle
+    }
+  };
+
+  const handleCancelTrip = async (tripId) => {
+    if (!window.confirm('Cancel this trip?')) return;
+    try {
+      await rideAPI.cancel(tripId);
       fetchTrips();
     } catch {
       // handle
@@ -103,28 +121,33 @@ export default function DriverTrips() {
         <Spinner />
       ) : trips.length === 0 ? (
         <div className={styles.emptyState}>
-          <h3>No trips yet</h3>
-          <p>Post your first ride to start earning.</p>
+          <div style={{ fontSize: '48px', marginBottom: 'var(--space-3)' }}>🚗</div>
+          <h3>No trips posted yet</h3>
+          <p>Share your journey and fill empty seats!</p>
           <Button onClick={() => navigate('/post-ride')} style={{ marginTop: 'var(--space-4)' }}>
             Post a Ride
           </Button>
         </div>
       ) : (
         <div className={styles.tripList}>
-          {trips.map((trip) => (
-            <div key={trip.id} className={styles.tripCard}>
+          {trips.map((trip, idx) => (
+            <div key={trip.id} className={styles.tripCard} style={{ animationDelay: `${idx * 60}ms` }}>
+              {/* Header: Route + Status */}
               <div className={styles.tripHeader}>
                 <span className={styles.routeText}>
-                  {trip.originCity} → {trip.destinationCity}
+                  {tripOrigin(trip)} → {tripDest(trip)}
                 </span>
-                <Badge status={trip.status}>{trip.status?.replace('_', ' ')}</Badge>
-              </div>
-              <div className={styles.tripMeta}>
-                <span>{formatDateSafe(trip.departureAt)}</span>
-                <span>{trip.availableSeats}/{trip.totalSeats} seats available</span>
-                <span>${trip.pricePerSeat}/seat</span>
+                <Badge status={trip.status}>{(trip.status || 'active').replace('_', ' ')}</Badge>
               </div>
 
+              {/* Metadata line */}
+              <div className={styles.tripMeta}>
+                <span>{formatDateSafe(tripDeparture(trip))}</span>
+                <span>{tripSeatsAvail(trip)} seat{tripSeatsAvail(trip) !== 1 ? 's' : ''} available</span>
+                <span>${tripPrice(trip)}/seat</span>
+              </div>
+
+              {/* Booking Requests */}
               {trip.bookings && trip.bookings.length > 0 && (
                 <div className={styles.bookingsSection}>
                   <div className={styles.bookingsTitle}>Booking Requests</div>
@@ -148,23 +171,32 @@ export default function DriverTrips() {
                 </div>
               )}
 
-              <div className={styles.tripActions}>
-                {trip.status === 'active' && (
-                  <Button variant="success" size="sm" onClick={() => handleStartTrip(trip.id)}>
-                    Start Trip
-                  </Button>
-                )}
-                {trip.status === 'in_progress' && (
-                  <Button variant="success" size="sm" onClick={() => handleCompleteTrip(trip.id)}>
-                    Complete Trip
-                  </Button>
-                )}
-              </div>
+              {/* Action Buttons */}
+              {(trip.status === 'active' || trip.status === 'in_progress' || trip.status === 'completed') && (
+                <div className={styles.tripActions}>
+                  {trip.status === 'active' && (
+                    <Button variant="success" size="sm" onClick={() => handleStartTrip(trip.id)}>
+                      Start Trip
+                    </Button>
+                  )}
+                  {trip.status === 'in_progress' && (
+                    <Button variant="success" size="sm" onClick={() => handleCompleteTrip(trip.id)}>
+                      Complete Trip
+                    </Button>
+                  )}
+                  {(trip.status === 'active' || trip.status === 'in_progress') && (
+                    <Button variant="danger" size="sm" onClick={() => handleCancelTrip(trip.id)}>
+                      Cancel Trip
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
+      {/* Rating Modal */}
       <Modal
         isOpen={ratingModal.open}
         onClose={() => setRatingModal({ open: false, booking: null })}

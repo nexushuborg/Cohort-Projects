@@ -127,6 +127,17 @@ export default function PostRide() {
 
       if (data.success) {
         setMessage('Ride posted successfully!');
+        setForm({
+          originAddress: '',
+          originCity: '',
+          destinationAddress: '',
+          destinationCity: '',
+          departureDate: '',
+          departureTime: '',
+          totalSeats: '3',
+          pricePerSeat: '',
+          notes: '',
+        });
         setTimeout(() => navigate('/driver/trips'), 1500);
       }
     } catch (err) {

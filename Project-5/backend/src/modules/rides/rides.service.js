@@ -125,8 +125,66 @@ const getRideById = async (rideId) => {
   return ride;
 };
 
+const getMyRides = async (userId) => {
+  const driver = await repository.findDriverByUserId(userId);
+  if (!driver) {
+    return [];
+  }
+  return repository.findRidesByDriverId(driver.id);
+};
+
+const startRide = async (rideId, userId) => {
+  const ride = await repository.findRideById(rideId);
+  if (!ride) {
+    const error = new Error('Ride not found');
+    error.statusCode = 404;
+    error.code = 'NOT_FOUND';
+    throw error;
+  }
+  const driver = await repository.findDriverByUserId(userId);
+  if (!driver || ride.driver_id !== driver.id) {
+    const error = new Error('Not authorized to start this ride');
+    error.statusCode = 403;
+    error.code = 'FORBIDDEN';
+    throw error;
+  }
+  if (ride.status !== 'active') {
+    const error = new Error(`Cannot start ride with status '${ride.status}'`);
+    error.statusCode = 400;
+    error.code = 'INVALID_STATUS';
+    throw error;
+  }
+  return repository.updateRideStatus(rideId, 'in_progress');
+};
+
+const cancelRide = async (rideId, userId) => {
+  const ride = await repository.findRideById(rideId);
+  if (!ride) {
+    const error = new Error('Ride not found');
+    error.statusCode = 404;
+    error.code = 'NOT_FOUND';
+    throw error;
+  }
+  const driver = await repository.findDriverByUserId(userId);
+  if (!driver || ride.driver_id !== driver.id) {
+    const error = new Error('Not authorized to cancel this ride');
+    error.statusCode = 403;
+    error.code = 'FORBIDDEN';
+    throw error;
+  }
+  if (ride.status === 'completed' || ride.status === 'cancelled') {
+    const error = new Error(`Cannot cancel ride with status '${ride.status}'`);
+    error.statusCode = 400;
+    error.code = 'INVALID_STATUS';
+    throw error;
+  }
+  return repository.updateRideStatus(rideId, 'cancelled');
+};
 
 module.exports = {
   createRide,
-  getRideById
+  getRideById,
+  getMyRides,
+  startRide,
+  cancelRide
 };

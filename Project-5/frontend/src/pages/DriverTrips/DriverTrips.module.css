@@ -17,8 +17,13 @@
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
-  transition: box-shadow var(--transition-base);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
   animation: fadeInUp 300ms var(--ease-out) both;
+}
+
+.tripCard:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
 }
 
 .tripCard:hover {
@@ -102,16 +107,21 @@
 .emptyState {
   text-align: center;
   padding: var(--space-16) var(--space-4);
+  background-color: var(--bg-primary);
+  border: 1px dashed var(--color-border-light);
+  border-radius: var(--radius-lg);
 }
 
 .emptyState h3 {
   margin-bottom: var(--space-2);
   font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
 }
 
 .emptyState p {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+  margin-bottom: var(--space-1);
 }
 
 @keyframes fadeInUp {

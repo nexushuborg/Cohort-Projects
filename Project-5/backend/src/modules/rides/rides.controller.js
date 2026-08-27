@@ -77,7 +77,52 @@ const getRideById = async (req, res) => {
   }
 };
 
+const getMyRides = async (req, res) => {
+  try {
+    const rides = await service.getMyRides(req.user.sub);
+    return res.status(200).json({
+      success: true,
+      data: rides
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      error: {
+        code: error.code || 'INTERNAL_ERROR',
+        message: error.message
+      }
+    });
+  }
+};
+
+const startRide = async (req, res) => {
+  try {
+    const ride = await service.startRide(req.params.id, req.user.sub);
+    return res.status(200).json({ success: true, data: ride });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      error: { code: error.code || 'INTERNAL_ERROR', message: error.message }
+    });
+  }
+};
+
+const cancelRide = async (req, res) => {
+  try {
+    const ride = await service.cancelRide(req.params.id, req.user.sub);
+    return res.status(200).json({ success: true, data: ride });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      error: { code: error.code || 'INTERNAL_ERROR', message: error.message }
+    });
+  }
+};
+
 module.exports = {
   createRide,
-  getRideById
+  getRideById,
+  getMyRides,
+  startRide,
+  cancelRide
 };
