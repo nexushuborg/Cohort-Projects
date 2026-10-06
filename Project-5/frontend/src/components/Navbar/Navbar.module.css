@@ -1,0 +1,321 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-navbar);
+  height: var(--nav-height);
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+}
+
+.navbarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  width: 100%;
+}
+
+/* — Logo — */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.logoIcon {
+  font-size: 20px;
+  color: var(--color-black);
+}
+
+.logoText {
+  letter-spacing: -0.03em;
+}
+
+/* — Center nav — */
+.navCenter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* — Mode Switcher — */
+.modeSwitcher {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 2px;
+}
+
+.modeBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1\.5) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.modeBtn:hover {
+  color: var(--color-text-primary);
+}
+
+.modeBtnActive {
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.modeIcon {
+  font-size: 14px;
+}
+
+.navDivider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--color-border);
+  flex-shrink: 0;
+}
+
+/* — Nav Links — */
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.navLink {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: var(--color-text-primary);
+  background-color: var(--bg-surface);
+}
+
+.navLinkActive {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* — Right — */
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.authBtns {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.avatarLink {
+  display: flex;
+}
+
+.userAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-black);
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  transition: box-shadow var(--transition-fast);
+}
+
+.userAvatar:hover {
+  box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--color-black);
+}
+
+/* — Hamburger — */
+.hamburger {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
+}
+
+.hamburger:hover {
+  background-color: var(--bg-surface);
+}
+
+.hamburgerLine {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background-color: var(--color-text-primary);
+  border-radius: 1px;
+  transition: transform var(--transition-base), opacity var(--transition-fast);
+}
+
+.hamburgerLine.open:first-child {
+  transform: rotate(45deg) translate(2.5px, 2.5px);
+}
+
+.hamburgerLine.open:last-child {
+  transform: rotate(-45deg) translate(2.5px, -2.5px);
+}
+
+/* — Mobile Overlay & Drawer — */
+.mobileOverlay {
+  display: none;
+}
+
+.mobileDrawer {
+  display: none;
+}
+
+/* — Mobile Mode Toggle — */
+.mobileModeToggle {
+  display: none;
+}
+
+.mobileModeBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  width: 100%;
+  text-align: left;
+}
+
+.mobileModeBtnActive {
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.mobileNavLinks {
+  display: none;
+}
+
+.mobileNavLink {
+  display: block;
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  transition: background-color var(--transition-fast);
+}
+
+.mobileNavLink:hover {
+  background-color: var(--bg-surface);
+  color: var(--color-text-primary);
+}
+
+.mobileFooter {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .navCenter {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .mobileOverlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: var(--nav-height);
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: calc(var(--z-navbar) - 1);
+    animation: fadeIn 200ms ease;
+  }
+
+  .mobileDrawer {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--color-border);
+    z-index: var(--z-navbar);
+    animation: slideDown 300ms var(--ease-out);
+    max-height: calc(100vh - var(--nav-height));
+    overflow-y: auto;
+  }
+
+  .mobileModeToggle {
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .mobileNavLinks {
+    display: block;
+    padding: var(--space-2) 0;
+  }
+
+  .mobileFooter {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--color-border-light);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
