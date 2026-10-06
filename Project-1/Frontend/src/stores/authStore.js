@@ -2,22 +2,39 @@ import { create } from "zustand";
 
 const useAuthStore = create((set) => ({
   user: null,
-  token: null,
-  isAuthenticated: false,
+  accessToken: localStorage.getItem("accessToken"),
+  refreshToken: localStorage.getItem("refreshToken"),
 
-  login: (user, token) =>
+  login: (data) => {
+    const { user, accessToken, refreshToken } = data;
+
+    localStorage.setItem("accessToken", accessToken);
+
+    if (refreshToken) {
+      localStorage.setItem("refreshToken", refreshToken);
+    }
+
     set({
       user,
-      token,
-      isAuthenticated: true,
-    }),
+      accessToken,
+      refreshToken,
+    });
+  },
 
-  logout: () =>
+  logout: () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+
     set({
       user: null,
-      token: null,
-      isAuthenticated: false,
-    }),
+      accessToken: null,
+      refreshToken: null,
+    });
+  },
+
+  setUser: (user) => {
+    set({ user });
+  },
 }));
 
 export default useAuthStore;

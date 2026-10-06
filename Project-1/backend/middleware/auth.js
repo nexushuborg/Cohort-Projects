@@ -27,7 +27,7 @@ const authorize = (...roles) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        error: { code: 'Invalid', message: 'Cannot Accessed' }
+        error: { code: 'FORBIDDEN', message: 'Cannot access this resource' }
       });
     }
     next();
